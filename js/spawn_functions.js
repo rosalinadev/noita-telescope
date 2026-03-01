@@ -404,6 +404,13 @@ export function spawnSwitch(biomeMap, biomeName, functionIndex, ws, ng, x, y, sk
 			return loadRandomPixelScene(biomeMap, biomeName, scenes["g_pixel_scene_01"], ws, ng, x-5, y-3, skipCosmeticScenes);
 		}
 	}
+	else if (biomeName === "the_end") {
+		if (func === "spawn_heart" || func === "spawn_potions" || func === "spawn_wands" || func === "spawn_potion_altar") {
+			// Hell specifically disables these function despite having spawn pixels for hearts/chests
+			// Note that this does not apply to the hell version of the tower, which actually can spawn hearts (from what I have seen)
+			return null;
+		}
+	}
 
 	// Default functions come after biome-specific ones
 	if (func === "spawn_shopitem") {

@@ -520,6 +520,20 @@ export const SANDCAVE_SCENES = {
 	],
 };
 
+export const LIQUIDCAVE_SCENES = {
+	"g_pixel_scene_01": [
+		{prob: 0.5, name: "container_01", color_material: {"f0bbee": ["oil", "alcohol", "lava", "magic_liquid_teleportation", "magic_liquid_protection_all", "material_confusion", "liquid_fire", "magic_liquid_weakness"]}},
+	],
+};
+
+// These are not used for normal hell spawns but will become relevant in vertical PWs
+export const THE_END_SCENES = {
+	"g_pixel_scene_01": [
+		{prob: 1.0, name: "cathedral"},
+		{prob: 1.0, name: "mining"},
+	],
+};
+
 export const GENERAL_SCENES = {
 	"extras": [
 		{name: "wand_altar"},
@@ -533,16 +547,10 @@ export const FUNGICAVE_SCENES = {};
 export const FUNGIFOREST_SCENES = {};
 export const WANDCAVE_SCENES = {};
 export const WIZARDCAVE_SCENES = {};
-export const LIQUIDCAVE_SCENES = {
-	"g_pixel_scene_01": [
-		{prob: 0.5, name: "container_01", color_material: {"f0bbee": ["oil", "alcohol", "lava", "magic_liquid_teleportation", "magic_liquid_protection_all", "material_confusion", "liquid_fire", "magic_liquid_weakness"]}},
-	],
-};
 export const ROBOBASE_SCENES = {};
 export const SNOWCHASM_SCENES = {};
 export const CLOUDS_SCENES = {};
 export const THE_SKY_SCENES = {};
-export const THE_END_SCENES = {};
 export const TEMPLE_ALTAR_SCENES = {};
 export const SNOWCASTLE_CAVERN_SCENES = {};
 
