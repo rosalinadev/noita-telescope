@@ -499,7 +499,7 @@ export const app = {
 			const currentPois = this.poisByPW[`${this.pw},${this.pwVertical}`];
 			const poiHit = currentPois.find(p => {
 				const px = p.x - (this.pw * 512 * getWorldSize(this.isNGP)) + getWorldCenter(this.isNGP) * 512;
-				const py = p.y + 14 * 512 - (this.pwVertical * 24570);
+				const py = p.y + 14 * 512 - (this.pwVertical * 24576);
 				let tempRadius = POI_RADIUS;
 				if (p.highlight) {
 					tempRadius = POI_RADIUS / this.cam.z;
@@ -510,7 +510,7 @@ export const app = {
 				if (p.data) {
 					// Coordinates already account for PW shift
 					const px = p.data.x + getWorldCenter(this.isNGP) * 512 - (this.pw * 512 * getWorldSize(this.isNGP));
-					const py = p.data.y + 14 * 512 - (this.pwVertical * 24570);
+					const py = p.data.y + 14 * 512 - (this.pwVertical * 24576);
 					return Math.sqrt((px - wx) ** 2 + (py - wy) ** 2) < POI_RADIUS;
 				}
 				return false;
@@ -1145,7 +1145,7 @@ export const app = {
 					}
 
 					const px = p.x - (this.pw * 512 * getWorldSize(this.isNGP)) + getWorldCenter(this.isNGP) * 512;
-					const py = p.y + 14 * 512 - (this.pwVertical * 24570);
+					const py = p.y + 14 * 512 - (this.pwVertical * 24576); // Shift already baked into the tile spawns
 					let tempRadius = POI_RADIUS;
 					if (p.highlight === true) {
 						this.ctx.strokeStyle = '#000000AA';
