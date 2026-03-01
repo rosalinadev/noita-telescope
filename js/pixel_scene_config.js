@@ -534,6 +534,13 @@ export const THE_END_SCENES = {
 	],
 };
 
+export const THE_SKY_SCENES = {
+	"g_pixel_scene_01": [
+		{prob: 1.0, name: "cathedral"},
+		{prob: 1.0, name: "mining"},
+	],
+};
+
 export const GENERAL_SCENES = {
 	"extras": [
 		{name: "wand_altar"},
@@ -550,7 +557,6 @@ export const WIZARDCAVE_SCENES = {};
 export const ROBOBASE_SCENES = {};
 export const SNOWCHASM_SCENES = {};
 export const CLOUDS_SCENES = {};
-export const THE_SKY_SCENES = {};
 export const TEMPLE_ALTAR_SCENES = {};
 export const SNOWCASTLE_CAVERN_SCENES = {};
 

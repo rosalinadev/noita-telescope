@@ -20,7 +20,7 @@ function getBiomeAlias(biomeName) {
 	if (biomeName === "sandcave") return "snowcastle";
 	if (biomeName === "rainforest_open" || biomeName === "rainforest_dark") return "rainforest";
 	if (biomeName === "vault_frozen") return "vault";
-	if (biomeName === "the_end") return "crypt";
+	if (biomeName === "the_end" || biomeName === "the_sky") return "crypt";
 	return biomeName;
 }
 

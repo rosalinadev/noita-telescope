@@ -310,6 +310,11 @@ export const THE_END_SPAWNS = [
 	{color: 0xbe704d, funcName: "spawn_specialshop", active: true }
 ];
 
+export const THE_SKY_SPAWNS = [
+	{color: 0x33934c, funcName: "spawn_shopitem", active: true },
+	{color: 0xbe704d, funcName: "spawn_specialshop", active: true }
+];
+
 export const MEAT_SPAWNS = [
 	{color: 0xffeedd, funcName: "init" },
 	{color: 0x55AF8C, funcName: "spawn_skulls" },
@@ -360,7 +365,6 @@ export const EXCAVATIONSITE_CUBE_CHAMBER_SPAWNS = [
 ];
 
 export const CLOUDS_SPAWNS = [];
-export const THE_SKY_SPAWNS = [];
 export const TEMPLE_ALTAR_SPAWNS = [];
 
 // Assume all active for now
