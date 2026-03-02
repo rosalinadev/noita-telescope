@@ -207,22 +207,22 @@
         <h1>Lymm's Telescope</h1>
         <small style="font-size: 10px;">Warning: Not everything implemented, may give incorrect predictions (especially on edges of biomes), make sure to check your unlocks, etc.</small>
         <h3>Settings</h3>
-        <label>Seed</label> <input type="number" id="seed" placeholder="Enter your seed" value="" min="0" max="2147483647">
-        <label>NG+ Count</label> <input type="number" id="ng" value="0" min="0" max="28">
+        <label>Seed</label> <input type="number" id="seed" placeholder="Enter your seed" value="" min="0" max="2147483647" autocomplete="off">
+        <label>NG+ Count</label> <input type="number" id="ng" value="0" min="0" max="28" autocomplete="off">
         
         <label>Parallel Worlds (PWs)</label>
 
         <label>Horizontal</label>
         <div class="pw-controls">
             <button id="pw-dec" class="btn-small" style="flex:0.3">-</button>
-            <input id="pw" type="number" value="0" min="-512" max="512">
+            <input id="pw" type="number" value="0" min="-512" max="512" autocomplete="off">
             <button id="pw-inc" class="btn-small" style="flex:0.3">+</button>
         </div>
 
         <label>Vertical</label>
         <div class="pw-controls">
             <button id="pw-dec-vertical" class="btn-small" style="flex:0.3">-</button>
-            <input id="pw-vertical" type="number" value="0" min="-683" max="683">
+            <input id="pw-vertical" type="number" value="0" min="-683" max="683" autocomplete="off">
             <button id="pw-inc-vertical" class="btn-small" style="flex:0.3">+</button>
         </div>
 
@@ -233,7 +233,7 @@
         <div id="search-container" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
             <span style="font-weight:bold; font-size:14px;">Search World</span>
             <div style="display: flex; gap: 5px; margin-top: 5px;">
-                <input type="text" id="search-input" placeholder="Spells, items..." style="flex: 1;">
+                <input type="text" id="search-input" placeholder="Spells, items..." style="flex: 1;" autocomplete="off">
                 <button id="search-btn" style="flex: 0.4;">Find</button>
             </div>
 
@@ -254,11 +254,11 @@
             <div id="advanced-ui">
                 <div class="search-row">
                     <label>Wand Name Modifier</label>
-                    <input type="text" id="search-name" placeholder="e.g. Varpuluuta, Taikasauva, Bitcoin...">
+                    <input type="text" id="search-name" placeholder="e.g. Varpuluuta, Taikasauva, Bitcoin..." autocomplete="off">
                 </div>
                 <div class="search-row">
                     <label>Always Casts</label>
-                    <input type="text" id="search-ac" placeholder="Spell name...">
+                    <input type="text" id="search-ac" placeholder="Spell name..." autocomplete="off">
                     <label style="justify-content: flex-start; gap: 5px; margin-top: 2px;">
                         <input type="checkbox" id="search-ac-any"> Any Always Cast
                     </label>
@@ -308,9 +308,9 @@
                         <input type="checkbox" id="search-all-pw"> Search All PWs (Iterative)
                     </label>
                     <label>Limit PW Search <input type="checkbox" checked id="limit-pw-search" style="width:auto; margin-right:5px;"></label>
-                    <label>PW Limit: <input type="number" id="search-pw-limit" style="width:100px;" value="6" min="0" max="468"> </label>
+                    <label>PW Limit: <input type="number" id="search-pw-limit" style="width:100px;" value="6" min="0" max="468" autocomplete="off"> </label>
                     <label>Search Vertical PWs <input type="checkbox" id="search-vertical-pw" style="width:auto; margin-right:5px;"></label>
-                    <label>Vertical PW Limit: <input type="number" id="search-pw-vertical-limit" style="width:100px;" value="6" min="0" max="683"> </label>
+                    <label>Vertical PW Limit: <input type="number" id="search-pw-vertical-limit" style="width:100px;" value="6" min="0" max="683" autocomplete="off"> </label>
                     <small style="font-size:8px">Only tier 10 spells spawn in vertical PWs, don't use it for wand/item searches or it will be slow for no reason</small>
                 </div>
             </div>
@@ -330,7 +330,7 @@
                 </label>
             </div>
             <div class="options-row">
-                <label> Extra Items in Holy Mountains <input type="number" value="0" min="0" max="5" style="width: 40px;" id="extra-shop-items"></label>
+                <label> Extra Items in Holy Mountains <input type="number" value="0" min="0" max="5" style="width: 40px;" id="extra-shop-items" autocomplete="off"></label>
             </div>
         </div>
         
@@ -358,7 +358,7 @@
             <label class="debug-opt hidden"><input type="checkbox" id="debug-small-pois"> Show Small PoIs</label>
             <label class="debug-opt hidden"><input type="checkbox" id="debug-fix-holy-mountain-edge-noise" checked> Fix Holy Mountain Edge Noise</label>
             <label class="debug-opt hidden"><input type="checkbox" id="exclude-edge-cases" checked> Exclude Edge Cases (Unfinished)</label>
-            <label class="debug-opt hidden">Extra Rerolls (Pathfinding Debug)<input type="number" value="0" min="0" max="100" style="width: 60px;" id="debug-extra-rerolls"> </label>
+            <label class="debug-opt hidden">Extra Rerolls (Pathfinding Debug)<input type="number" value="0" min="0" max="100" style="width: 60px;" id="debug-extra-rerolls" autocomplete="off"> </label>
             <label class="debug-opt hidden"><input type="checkbox" id="debug-rng-info"> Display RNG Info (Deprecated)</label>
         </div>
 

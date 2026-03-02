@@ -104,7 +104,7 @@ export function isDuplicateObject(currentObj, newObj) {
             if (currentObj.cards[i] !== newObj.cards[i]) return false;
         }
         for (let key of WAND_KEYS) {
-            if (currentObj[key] !== newObj[key]) return false;
+            if (Math.abs(currentObj[key] - newObj[key]) > 0.01) return false;
         }
         return true;
     }
