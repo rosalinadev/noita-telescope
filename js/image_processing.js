@@ -55,58 +55,6 @@ function loadImage(src) {
 export const [BIOME_BACKGROUND_COLORS, BIOME_COLOR_LOOKUP] = await createBiomeColorLookup('./data/biome_maps/biome_map_background.png');
 export const [TILE_OVERLAY_COLORS, TILE_FOREGROUND_COLORS] = await createBiomeColorLookup('./data/biome_maps/biome_map_foreground.png');
 
-// TODO: Deprecated?
-// Use recolorOffscreen as reference
-export function createBiomeMapOverlay(biomeMap, width, height, recolorOffscreen) {
-	// Create an image which is solid with the same colors as the biome color lookup, but with all pixels that have wang tiles set to transparent
-	const referenceCtx = recolorOffscreen.getContext('2d');
-	const referenceData = referenceCtx.getImageData(0, 0, recolorOffscreen.width, recolorOffscreen.height).data;
-	const canvas = new OffscreenCanvas(width, height);
-	const ctx = canvas.getContext('2d');
-	const imageData = ctx.createImageData(width, height);
-	const data = imageData.data;
-	for (let i = 0; i < biomeMap.pixels.length; i++) {
-		const color = (biomeMap.pixels[i] & 0xffffff); // Mask out alpha if present
-		data[4*i] = referenceData[4*i];
-		data[4*i + 1] = referenceData[4*i + 1];
-		data[4*i + 2] = referenceData[4*i + 2];
-		if (BIOME_COLOR_TO_NAME[color]) {
-			data[4*i + 3] = 0; // Transparent
-		}
-		else {
-			data[4*i + 3] = 255; // Opaque I guess
-		}
-	}
-	ctx.putImageData(imageData, 0, 0);
-	return canvas;
-}
-
-// TODO: Deprecated?
-export function createBiomeMapOverlayVerticalPW(biomeMap, width, height, recolorOffscreen, direction) {
-	// Create an image which is solid with the same colors as the biome color lookup, but with all pixels that have wang tiles set to transparent
-	const referenceCtx = recolorOffscreen.getContext('2d');
-	const referenceData = referenceCtx.getImageData(0, 0, recolorOffscreen.width, recolorOffscreen.height).data;
-	const canvas = new OffscreenCanvas(width, height);
-	const ctx = canvas.getContext('2d');
-	const imageData = ctx.createImageData(width, height);
-	const data = imageData.data;
-    const row = direction === 1 ? 0 : recolorOffscreen.height - 1; // Use top row for upward PW and bottom row for downward PW
-	for (let i = 0; i < biomeMap.pixels.length; i++) {
-		const color = (biomeMap.pixels[i % recolorOffscreen.width + row * recolorOffscreen.width] & 0xffffff); // Mask out alpha if present
-		data[4*i] = referenceData[4*i];
-		data[4*i + 1] = referenceData[4*i + 1];
-		data[4*i + 2] = referenceData[4*i + 2];
-		if (BIOME_COLOR_TO_NAME[color]) {
-			data[4*i + 3] = 0; // Transparent
-		}
-		else {
-			data[4*i + 3] = 255; // Opaque I guess
-		}
-	}
-	ctx.putImageData(imageData, 0, 0);
-	return canvas;
-}
-
 export function createTileOverlaysCheap(biomeData, layers, pwIndex, pwIndexVertical, isNGP) {
     const recolorMaterials = document.getElementById('recolor-materials').checked;
     const clearSpawnPixels = document.getElementById('clear-spawn-pixels').checked;
@@ -492,4 +440,18 @@ export function createTileOverlaysExpanded(biomeData, recolorOffscreen, layers, 
     const t1 = performance.now();
     console.log(`Generated expanded tile overlays in ${(t1 - t0).toFixed(2)} ms`);
     return overlays;
+}
+
+export function makeBlackTransparent(ctx) {
+    const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        // Check if R=0, G=0, B=0
+        if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) {
+            data[i + 3] = 0; // Set Alpha to 0 (Transparent)
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
 }

@@ -627,7 +627,7 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 		// TODO: Block spawn for specific biomes where it's explicitly overwritten to not generate, low priority since it would require specific overlaps
 		const checkResult = checkWandAltar(ws, ng, x, y, biomeName);
 		if (checkResult === 'utility_box') {
-			return generateUtilityBox(ws, ng, x, y);
+			return generateUtilityBox(ws, ng, x, y, perks);
 		}
 		else if (checkResult) {
 			let offsetX = -10;

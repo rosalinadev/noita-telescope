@@ -127,7 +127,7 @@ export function spawnWandAltar(ws, ng, x, y, biome, perks={}) {
 	if (ALTAR_SPAWN_DATA[biome].rg !== undefined && r >= ALTAR_SPAWN_DATA[biome].rg) {
 		if (ALTAR_SPAWN_DATA[biome].ru !== undefined && r < ALTAR_SPAWN_DATA[biome].ru) {
 			// Utility box
-			return generateUtilityBox(ws, ng, x, y);
+			return generateUtilityBox(ws, ng, x, y, perks);
 		}
 		return null;
 	}

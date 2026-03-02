@@ -89,7 +89,7 @@ export function spawnItem(ws, ng, x, y, biome, perks={}) {
         item = generateItemLiquidcave(ws, ng, x, y);
     }
     else {
-        item = generateItem(ws, ng, x, y);
+        item = generateItem(ws, ng, x, y, perks);
     }
     if (!item) {
         return null;
@@ -106,7 +106,7 @@ export function spawnItem(ws, ng, x, y, biome, perks={}) {
     return item;
 }
 
-function generateItem(ws, ng, x, y) {
+function generateItem(ws, ng, x, y, perks={}) {
 	const prng = new NollaPrng(0);
 	prng.SetRandomSeed(ws + ng, x, y);
 	let rnd = prng.Random(1, 1000);
@@ -124,7 +124,12 @@ function generateItem(ws, ng, x, y) {
 	else if (rnd <= 71) {
 		let unlocked = unlockedSpells[363];
 		if (unlocked) {
-			return {type: 'item', item: 'chaos_die', x: x, y: y};
+			if (perks['greedCurse']) {
+				return {type: 'item', item: 'greed_die', x: x, y: y};
+			}
+			else {
+				return {type: 'item', item: 'chaos_die', x: x, y: y};
+			}
 		}
 		else {
 			return null;
@@ -156,7 +161,12 @@ function generateItem(ws, ng, x, y) {
 		return {type: 'item', item: 'broken_wand', x: x, y: y};
 	}
 	else {
-		return {type: 'item', item: 'shiny_orb', x: x, y: y};
+		if (perks['greedCurse']) {
+			return {type: 'item', item: 'greed_orb', x: x, y: y};
+		}
+		else {
+			return {type: 'item', item: 'shiny_orb', x: x, y: y};
+		}
 	}
 }
 

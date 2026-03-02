@@ -2,9 +2,9 @@ import { NollaPrng } from './nolla_prng.js';
 import { BLOCKED_COLORS, PIXEL_SCENE_BIOME_MAP } from './pixel_scene_config.js';
 import { MATERIAL_COLOR_CONVERSION, MATERIAL_WANG_COLORS } from './potion_config.js';
 import { getBiomeAtWorldCoordinates } from './utils.js';
-import { sanitizePng, makeBlackTransparent } from './png_sanitizer.js';
+import { sanitizePng } from './png_sanitizer.js';
 import { prescanPixelScene } from './poi_scanner.js';
-import { BIOME_BACKGROUND_COLORS, TILE_OVERLAY_COLORS } from './image_processing.js';
+import { BIOME_BACKGROUND_COLORS, TILE_OVERLAY_COLORS, makeBlackTransparent } from './image_processing.js';
 
 // This was originally constant but it sometimes needs to be cleared to regenerate the cache...
 export let PIXEL_SCENE_DATA = {};

@@ -21,7 +21,7 @@ A web-based seed analyzer for [Noita](https://noitagame.com/), including a detai
 	- **Perks (that affect generation):** Account for perks like *Curse of Greed*, *No More Shuffle*, and *Extra Item in Holy Mountain* which affect generation. Normal perk generation in Holy Mountains is not implemented at the moment, as that wasn't a priority.
 	- **Region Toggles:** Selectively generate specific biomes or only biomes with useful objects to save performance. Regions without objects are toggled off by default.
 	- **Exclude Cosmetic Pixel Scenes:** Can be toggled to not generate pixel scenes without items in them, to save a bit of time while searching.
-- **Special Biomes:** and Bosses:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube, the secret snowy chamber, and the robot egg, and spell spawns from the Hiisi hourglass shop, the Eye Room, and the static heaven and hell shops.
+- **Special Biomes:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube, the secret snowy chamber, and the robot egg, and spell spawns from the Hiisi hourglass shop, the Eye Room, and the static heaven and hell shops.
 - **Boss Drops:** Shows the seed-based spell drops from the Alchemist, Pyramid, Triangle, and Dragon bosses. Wands dropped from bosses depend on the pixel where they were defeated, but spell drops are based only on the seed, so the dragon drops show the wand which will drop if the dragon is defeated before it moves from where it spawns.
 - **NG+ Orb Room Locations:** Orb rooms are shown on the map for each NG+ cycle except for NG0.
 - **Secrets:** Includes the hidden messages around the world, including the Wall Messages, a few background symbols, and the Eye Messages. (This is a major upgrade to the previous tool, "Lymm's Binoculars," which just showed the location of the eye messages for a seed, hence the name.)
@@ -33,7 +33,7 @@ If you prefer to run this tool locally instead of using the web version, assumin
 1.  Clone the repository:
 	```bash
 	git clone https://github.com/Lymm37/noita-telescope.git
-	cd yet-another-noita-seed-tool
+	cd noita-telescope
 	```
 2.  Run a minimal local server:
 	```bash
@@ -57,9 +57,10 @@ The search tool supports a variety of filtering options. In the main search fiel
 
 ## Issues / TODO
 
+*   **Slow initial loading**: Loading the pixel scene data can be slow on github pages, but this only needs to be done on the initial page load, and once it is done, generating the map for a given seed should be pretty fast.
 *   **Not guaranteed to be accurate in all cases:** There are edge cases where it fails (false postive spawns, false negative spawns, and incorrect spell spawns).
 *   **Edge Cases:** Biome boundaries (Edge Noise) are calculated, but do not consistently agree with the way pixel scenes and spawns are filtered at biome edges in game. As a result, there may be some false positives and false negatives. If you toggle the "Enable Edge Noise" debug option and the spawn you are interested in disappears (or appears), it may not be real. But sometimes it will be. This is a work in progress.
-*   **Vertical Parallel Worlds:** Implemented, and seems to be working for the most part. Missing the static shop near the center. Also there seems to be issues with some spells in hell spawning just above a chunk and falling into the void, and these end up looking like false positives.
+*   **Vertical Parallel Worlds:** Implemented, and seems to be working for the most part. There are some issues with some spells in hell spawning just above a chunk and falling into the void, and these end up looking like false positives.
 *   **Perks:** Not implemented, and not a high priority considering how many tools there already are which can find perks for a seed.
 *   **Static Pixel Scenes:** Currently the world view does not include pixel scenes which are the same in every seed, like the Holy Mountains, tree, orb rooms, etc. These are not included because they are not particularly useful for finding items, since they are always the same. I might update these in the future but my main priority is getting things functional before working on aesthetics.
 *   **Missing Pixel Scenes:** Some pixel scenes may be missing in some biomes, some of which might have useful items, that I missed. Most pixel scenes are implemented, though.

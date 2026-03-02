@@ -1,7 +1,6 @@
 import { NollaPrng } from "./nolla_prng.js";
 import { spawnWithRandomOffset } from "./spawn_functions.js";
 import { MakeRandomSpell, GetRandomAction } from "./spell_generator.js";
-import { unlockedSpells } from "./unlocks.js";
 import { getWorldCenter, getWorldSize } from "./utils.js";
 import { generateWand, getWandType, spawnWandAltar } from "./wand_generation.js";
 import { roundHalfOfEven } from "./utils.js";

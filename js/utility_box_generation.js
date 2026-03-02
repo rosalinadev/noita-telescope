@@ -4,7 +4,7 @@ import { roundRNGPos } from "./utils.js";
 import { unlockedSpells } from "./unlocks.js";
 import { MakeRandomUtilitySpell } from "./spell_generator.js";
 
-export function generateUtilityBox(ws, ng, x, y) {
+export function generateUtilityBox(ws, ng, x, y, perks={}) {
 	const prng = new NollaPrng(0);
 	prng.SetRandomSeed(ws + ng, roundRNGPos(x) + 509.7, y + 683.1);
 
@@ -38,11 +38,24 @@ export function generateUtilityBox(ws, ng, x, y) {
 				if (opts[selected] == 'chaos_die') {
 					let unlocked = unlockedSpells[363];
 					if (unlocked) {
-						items.push({type: 'item', item: 'chaos_die', x: x, y: y});
+						if (perks['greedCurse']) {
+							items.push({type: 'item', item: 'greed_die', x: x, y: y});
+						}
+						else {
+							items.push({type: 'item', item: 'chaos_die', x: x, y: y});
+						}
 					}
 					else {
 						items.push(createPotion(ws, ng, x, y - 10, 'normal'));
 					}   
+				}
+				else if (opts[selected] == 'shiny_orb') {
+					if (perks['greedCurse']) {
+						items.push({type: 'item', item: 'greed_orb', x: x, y: y});
+					}
+					else {
+						items.push({type: 'item', item: 'shiny_orb', x: x, y: y});
+					}
 				}
 				else {
 					items.push({type: 'item', item: opts[selected], x: x, y: y});

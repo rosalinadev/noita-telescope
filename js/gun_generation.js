@@ -691,49 +691,6 @@ for (let rngState = 0; rngState < Math.pow(2, 31); rngState++) {
 }
 */
 
-// Why didn't this work?
-/*
-const prng = new NollaPrng(0);
-const results = [
-    {
-        "x": -3919,
-        "y": 1377
-    },
-    {
-        "x": -3613,
-        "y": -2231
-    },
-    {
-        "x": -2286,
-        "y": -494
-    },
-    {
-        "x": -1084,
-        "y": 1260
-    },
-    {
-        "x": 199,
-        "y": 3243
-    },
-    {
-        "x": 744,
-        "y": -2588
-    },
-    {
-        "x": 4371,
-        "y": 62
-    }
-];
-for (let i = 0; i < results.length; i++) {
-    const { x, y } = results[i];
-    const gun = generateGun(3, 0, 'normal', 200, 11, false, x, y, false);
-    console.log(gun);
-}
-*/
-
-// 1240330683
-//let gun = generateGunStandalone(1240330683);
-
 /*
 // Testing searching for high capacity tiny drops
 import { generateGreatChest } from "./chest_generation.js";

@@ -11,10 +11,8 @@ import { TIME_UNTIL_LOADING, POI_RADIUS, CHUNK_SIZE, VISUAL_TILE_OFFSET_X, VISUA
 import { getBiomeAtWorldCoordinates, getMaterialAtWorldCoordinates, getWorldCenter, getWorldSize } from './utils.js';
 import { renderWallMessages } from './wall_messages.js';
 import { findEyeMessages, renderEyeMessages } from './eye_messages.js';
-import { BIOME_COLOR_LOOKUP, createBiomeMapOverlayVerticalPW, createTileOverlays, createTileOverlaysCheap, createTileOverlaysExpanded } from './image_processing.js';
+import { BIOME_COLOR_LOOKUP, createTileOverlays, createTileOverlaysCheap, createTileOverlaysExpanded } from './image_processing.js';
 import { COALMINE_ALT_SCENES } from './pixel_scene_config.js';
-import { createBiomeMapOverlay } from './image_processing.js';
-//import { BIOME_SPAWN_FUNCTION_MAP } from './spawn_function_config.js';
 import { debugBiomeEdgeNoise } from './edge_noise.js';
 import { loadPixelSceneData, reloadPixelSceneCache } from './pixel_scene_generation.js';
 
