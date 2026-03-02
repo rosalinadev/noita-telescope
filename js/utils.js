@@ -14,8 +14,10 @@ export const CONTAINER_TYPES = [
     'triangle_boss',
     'alchemist_boss',
     'pyramid_boss',
+    'dragon',
     'laboratory',
-    'vault_puzzle'
+    'vault_puzzle',
+    'puzzle',
 ];
 
 // This function is pretty messed up even though it's currently in a working state

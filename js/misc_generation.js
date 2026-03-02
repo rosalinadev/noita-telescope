@@ -1,6 +1,10 @@
 import { NollaPrng } from "./nolla_prng.js";
+import { spawnWithRandomOffset } from "./spawn_functions.js";
 import { MakeRandomSpell, GetRandomAction } from "./spell_generator.js";
-import { spawnWandAltar } from "./wand_generation.js";
+import { unlockedSpells } from "./unlocks.js";
+import { getWorldCenter, getWorldSize } from "./utils.js";
+import { generateWand, getWandType, spawnWandAltar } from "./wand_generation.js";
+import { roundHalfOfEven } from "./utils.js";
 
 // Eye Room
 
@@ -26,7 +30,7 @@ export function generateEyeRoom(ws, ng, pwIndex) {
         let y = pos.y;
         //console.log(`Generating spell for Eye Room at (${x}, ${y})`);
         prng.SetRandomSeed(ws + ng, x, y);
-        spells.push({item: 'spell', spell: MakeRandomSpell(prng), x: x, y: y});
+        spells.push({type: 'item', item: 'spell', spell: MakeRandomSpell(prng), x: x, y: y});
     }
     let roomX = eyeRoomPos.x + pwIndex * 512 * worldSize;
     let roomY = eyeRoomPos.y;
@@ -69,7 +73,7 @@ export function generateHourglassShop(ws) {
         let x = baseX + pos.x;
         let y = baseY + pos.y;
         prng.SetRandomSeed(ws, x, y);
-        spells.push({item: 'spell', spell: GetRandomAction(ws, 0, x, y, 2, 0), x: x, y: y});
+        spells.push({type: 'item', item: 'spell', spell: GetRandomAction(ws, 0, x, y, 2, 0), x: x, y: y});
     }
     // side might be redundant 
     return {type: 'shop', items: spells, x: baseX+256, y: baseY+256, side: is_right ? 'right' : 'left', biome: 'snowcastle_cavern'};
@@ -109,6 +113,21 @@ export function generateSnowyRoom(ws, pwIndex, perks={}) {
     return wands;
 }
 
+const robotEggPosition = {x: -10 * 512 + 390, y: 29 * 512 + 313};
+
+export function generateRobotEgg(ws, ng, pwIndex, perks={}) {
+    const worldSize = ng > 0 ? 64 : 70;
+    const x = robotEggPosition.x + pwIndex * 512 * worldSize;
+    const y = robotEggPosition.y;
+    // Oh this actually uses a different spawn function, weird.
+    const wandType = getWandType(ws, ng, x + 5, y, 'robot_egg');
+    // Get adjusted position (same logic as taikasauvas)
+    const position = spawnWithRandomOffset(ws, ng, x, y)[0];
+    const wand = generateWand(ws, ng, roundHalfOfEven(position.x), roundHalfOfEven(position.y), wandType, perks);
+    wand['biome'] = 'robot_egg';
+    return wand;
+}
+
 // Jungle Portal
 
 // Only in NG0 main
@@ -145,7 +164,7 @@ export function generateTriangleBossDrops(ws, pwIndex) {
         //const y = triangleBossBasePosition.y + offset.y;
         prng.SetRandomSeed(ws, i, 10+pwIndex);
         const spell = MakeRandomSpell(prng);
-        spells.push({item: 'spell', spell: spell, x: triangleBossBasePosition.x + pwIndex * 512 * 70, y: triangleBossBasePosition.y});
+        spells.push({type: 'item', item: 'spell', spell: spell, x: triangleBossBasePosition.x + pwIndex * 512 * 70, y: triangleBossBasePosition.y});
     }
     return {type: 'triangle_boss', items: spells, x: triangleBossBasePosition.x + pwIndex * 512 * 70, y: triangleBossBasePosition.y, biome: 'wizardcave_entrance'};
 }
@@ -163,7 +182,7 @@ export function generateAlchemistBossDrops(ws, pwIndex) {
         let rnd = prng.Random(1, opts.length);
         let opt = opts[rnd-1];
         opts.splice(rnd-1, 1);
-        spells.push({item: 'spell', spell: opt, x: alchemistBossPosition.x + pwIndex * 512 * 70, y: alchemistBossPosition.y});
+        spells.push({type: 'item', item: 'spell', spell: opt, x: alchemistBossPosition.x + pwIndex * 512 * 70, y: alchemistBossPosition.y});
     }
     return {type: 'alchemist_boss', items: spells, x: alchemistBossPosition.x + pwIndex * 512 * 70, y: alchemistBossPosition.y, biome: 'secret_lab'};
 }
@@ -181,7 +200,79 @@ export function generatePyramidBossDrops(ws, pwIndex) {
         let rnd = prng.Random(1, opts.length);
         let opt = opts[rnd-1];
         opts.splice(rnd-1, 1);
-        spells.push({item: 'spell', spell: opt, x: pyramidBossPosition.x + pwIndex * 512 * 70, y: pyramidBossPosition.y});
+        spells.push({type: 'item', item: 'spell', spell: opt, x: pyramidBossPosition.x + pwIndex * 512 * 70, y: pyramidBossPosition.y});
     }
     return {type: 'pyramid_boss', items: spells, x: pyramidBossPosition.x + pwIndex * 512 * 70, y: pyramidBossPosition.y, biome: 'pyramid_top'};
 }
+
+const dragonBossPosition = {x: 4*512 + 296, y: 14*512 + 305};
+// Only in NG0 (though extra dragons can spawn in different positions in NG+)
+export function generateDragonBossDrops(ws, pwIndex) {
+    const x = dragonBossPosition.x + pwIndex * 512 * 70;
+    return getDragonDrops(ws, 0, 'dragoncave', x, dragonBossPosition.y);
+}
+
+export function getDragonDrops(worldSeed, ngPlusCount, biomeName, x, y, perks={}) {
+    let drops = [];
+
+    drops.push({type: 'item', item: 'heart', x: x-16, y: y});
+    // Wand (wand_unshuffle_06)
+    let wand = generateWand(worldSeed, ngPlusCount, x+16, y, 'wand_unshuffle_06', perks);
+    drops.push(wand);
+    // I misread this, it actually sets the flag and THEN checks it, so this branch triggers every time!
+    /*
+    let opts = ["ORBIT_DISCS", "ORBIT_FIREBALLS", "ORBIT_NUKES", "ORBIT_LASERS", "ORBIT_LARPA"];
+    let count = 3;
+    if (unlockedSpells[331]) { // Nuke orbit index
+        // If not first time kill, remove ORBIT_NUKES and only drop 1 card
+        opts.splice(2, 1);
+        count = 1;
+    }
+    */
+    let opts = ["ORBIT_DISCS", "ORBIT_FIREBALLS", "ORBIT_LASERS", "ORBIT_LARPA"];
+    const count = 1;
+    const prng = new NollaPrng(0);
+    const pwIndex = Math.floor((x + getWorldCenter(ngPlusCount > 0) * 512) / (getWorldSize(ngPlusCount > 0) * 512));
+    prng.SetRandomSeed( worldSeed + ngPlusCount, pwIndex, 540 )
+    for (let i = 0; i < count; i++) {
+        let rnd = prng.Random(1, opts.length);
+        let opt = opts[rnd-1];
+        drops.push({type: 'item', item: 'spell', spell: opt, x: x - 8*count + (i-0.5)*16, y: y});
+        opts.splice(rnd-1, 1);
+    }
+    drops.push({type: 'enemy', enemy: 'dragon', x: x, y: y, ignore: true}); // Dummy item for searching
+    return {type: 'dragon', items: drops, x: x, y: y, biome: biomeName};
+}
+
+
+const baseEndShopPositionHeaven = {x: 0, y: -13954};
+const baseEndShopPositionHell = {x: 0, y: 24576};
+const endShopSpellPositions = [
+    {x: 41, y: 148},
+    {x: 78, y: 148},
+    {x: 114, y: 148},
+    {x: 149, y: 148},
+    {x: 184, y: 148},
+    {x: 215, y: 148},
+];
+
+// Static heaven/hell shops
+export function generateEndShop(ws, ng, direction) {
+    // Note direction should be +/- 1
+    if (direction != 1 && direction != -1) return null;
+    const basePosition = direction == 1 ? baseEndShopPositionHell : baseEndShopPositionHeaven;
+    const prng = new NollaPrng(0);
+    let spells = [];
+    for (let i = 0; i < endShopSpellPositions.length; i++) {
+        let pos = endShopSpellPositions[i];
+        let x = basePosition.x + pos.x;
+        let y = basePosition.y + pos.y;
+        prng.SetRandomSeed(ws, ng, x, y);
+        spells.push({type: 'item', item: 'spell', spell: GetRandomAction(ws, 0, x, y, 10, 0), x: x, y: y});
+    }
+    
+    console.log(`Generated ${direction == 1 ? 'Hell' : 'Heaven'} Shop at (${basePosition.x}, ${basePosition.y}) with spells:`, spells);
+    return {type: 'shop', items: spells, x: basePosition.x + 128, y: basePosition.y + 128, biome: direction == 1 ? 'the_end' : 'the_sky'};
+}
+
+// I was going to implement the coral chest but turns out it's not deterministic, seeded by frame count. Same for the dark chest. Oh well.

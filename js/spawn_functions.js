@@ -10,6 +10,7 @@ import { BIOME_SPAWN_FUNCTION_MAP } from './spawn_function_config.js';
 import { BIOMES_WITH_SMALL_ALTARS, BIOME_WAND_ALTAR_OFFSET_MAP, BIOME_POTION_ALTAR_OFFSET_MAP } from './spawn_config.js';
 import { generateUtilityBox } from './utility_box_generation.js';
 import { getBiomeAtWorldCoordinates, roundHalfOfEven } from './utils.js';
+import { getDragonDrops } from './misc_generation.js';
 
 const BIOME_TIERS = {
 	'coalmine': 1,
@@ -76,6 +77,19 @@ function vault_safe(x, y) {
 	return true;
 }
 */
+
+// Just "spawn" in Lua
+export function spawnWithRandomOffset(ws, ng, x, y, minCount=1, maxCount=1, offsetX=5, offsetY=5) {
+	const prng = new NollaPrng(0);
+	let count = minCount + prng.ProceduralRandom(ws + ng, x+offsetX, y+offsetY) * (maxCount - minCount);
+	let positions = [];
+	for (let i = 1; i <= count; i++) {
+		let px = x + offsetX - 4 + prng.ProceduralRandom(ws + ng, x+i+offsetX, y+offsetY) * 8;
+		let py = y + offsetY - 4 + prng.ProceduralRandom(ws + ng, x+i+offsetX, y+offsetY) * 8;
+		positions.push({x: px, y: py});
+	}
+	return positions;
+}
 
 // Might just make this cover all colors?
 export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, skipCosmeticScenes=true, perks={}) {
@@ -173,7 +187,8 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 			return spawnChest(ws, ng, x, y - 25, false, perks);
 		}
 		else if (func === "spawn_receptacle_oil") {
-			return spawnSpecialWand(ws, ng, x + 72, y - 22, "ruusu");
+			const wand = spawnSpecialWand(ws, ng, x + 72, y - 22, "ruusu");
+			return {type: 'puzzle', materials: 'oil', items: [wand, {type: 'item', item: 'oil_receptacle_puzzle', x: x, y: y, ignore: true}], x: x + 72, y: y - 22}; // Include dummy item for searching
 		}
 		else if (func === "spawn_potion" || func === "spawn_props3") {
 			let r = prng.Next() * 0.4; //prng.ProceduralRandom(ws + ng, x, y) * 0.4;
@@ -209,7 +224,8 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 			}
 		}
 		else if (func === "spawn_receptacle") {
-			return spawnSpecialWand(ws, ng, x, y - 25, "kiekurakeppi");
+			const wand = spawnSpecialWand(ws, ng, x, y - 25, "kiekurakeppi");
+			return {type: 'puzzle', materials: 'steam', items: [wand, {type: 'item', item: 'steam_receptacle_puzzle', x: x, y: y, ignore: true}], x: x, y: y - 25}; // Include dummy item for searching
 		}
 	}
 	else if (biomeName === "snowcave") {
@@ -229,7 +245,8 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 			return {type: 'item', item: 'buried_eye_teleporter', x: x, y: y};
 		}
 		else if (func === "spawn_receptacle") {
-			return spawnSpecialWand(ws, ng, x, y - 85, "valtikka");
+			const wand = spawnSpecialWand(ws, ng, x, y - 85, "valtikka");
+			return {type: 'puzzle', materials: 'water', items: [wand, {type: 'item', item: 'water_receptacle_puzzle', x: x, y: y, ignore: true}], x: x, y: y - 85}; // Include dummy item for searching
 		}
 	}
 	else if (biomeName === "snowcastle") {
@@ -318,7 +335,7 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 	else if (biomeName === "rainforest" || biomeName === "rainforest_open") {
 		// Note this is not implemented for the vault, even though the function exists
 		if (func === "spawn_dragonspot") {
-			return {type: 'enemy', enemy: 'dragon', x: x, y: y};
+			return getDragonDrops(ws, ng, biomeName, x, y, perks);
 		}
 	}
 	else if (biomeName === "vault" || biomeName === "vault_frozen") {
@@ -343,20 +360,33 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 			const type_b = ["protect", "worm", "invis", "speed"];
 			const firstMaterial = prng.Random(1, type_a.length);
 			const secondMaterial = prng.Random(1, type_b.length);
-			const materials = [type_a[firstMaterial-1], type_b[secondMaterial-1]];
-			// TODO: Could make these a bit more readable
+
+			const material_conversions = {
+				"poly": "polymorphine, chaotic polymorphine",
+				"tele": "teleportatium, unstable teleportatium",
+				"charm": "pheromone, healthium, lively concoction",
+				"berserk": "berserkium",
+				"protect": "ambrosia",
+				"worm": "worm blood, worm pheromone",
+				"invis": "invisiblium",
+				"speed": "acceleratium, levitatium, hastium",
+			}
+			const materials = "Any of: " + material_conversions[type_a[firstMaterial-1]] + ", " + material_conversions[type_b[secondMaterial-1]];
 			const r = prng.ProceduralRandom(ws + ng, x, y);
 			let wand;
+			let searchItem;
 			if (r > 0.3) {
 				wand = spawnSpecialWand(ws, ng, x+70, y+10, "arpaluu");
+				searchItem = {type: 'item', item: 'vault_puzzle_arpaluu', x: x+70, y: y+10, ignore: true};
 			}
 			else {
 				wand = spawnSpecialWand(ws, ng, x+70, y+10, "varpuluuta");
+				searchItem = {type: 'item', item: 'vault_puzzle_varpuluuta', x: x+70, y: y+10, ignore: true};
 			}
 			return {
 				type: 'vault_puzzle',
 				materials: materials,
-				items: [wand],
+				items: [wand, searchItem], // Include dummy item for searching
 				x: x+70,
 				y: y+10,
 			};
@@ -403,6 +433,7 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 	else if (biomeName === "liquidcave") {
 		if (func === "load_pixel_scene") {
 			// Took me way too long to realize this one has a custom offset
+			// TODO: Get the material for this and add as PoI maybe? idk
 			return loadRandomPixelScene(biomeData, biomeName, scenes["g_pixel_scene_01"], ws, ng, x-5, y-3, skipCosmeticScenes);
 		}
 	}
@@ -484,6 +515,14 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 		if (biomeName === "wandcave") {
 			let r = prng.Next() * 0.4;
 			if (r >= 0.3) {
+				// Replacement
+				
+				let positions = spawnWithRandomOffset(ws, ng, x, y, 1, 2);
+				let px = roundHalfOfEven(positions[positions.length-1].x);
+				let py = roundHalfOfEven(positions[positions.length-1].y);
+				const wand = generateWand(ws, ng, px, py, "wand_level_03", perks);
+				
+				/*
 				let offsetX = 5;
 				let offsetY = 5;
 				let count = 1 + prng.ProceduralRandom(ws + ng, x+offsetX, y+offsetY);
@@ -493,6 +532,7 @@ export function spawnSwitch(biomeData, biomeName, functionIndex, ws, ng, x, y, s
 					let py = y + offsetY - 4 + prng.ProceduralRandom(ws + ng, x+i+offsetX, y+offsetY) * 8;
 					wand = generateWand(ws, ng, roundHalfOfEven(px), roundHalfOfEven(py), "wand_level_03", perks);
 				}
+				*/
 				if (wand) {
 					wand['name'] = "Taikasauva";
 				}

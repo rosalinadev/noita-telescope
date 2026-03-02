@@ -79,8 +79,8 @@ function generateWandHtml(wand) {
 		<b>Spells/Cast:</b> ${Math.floor(wand.actions_per_round)}<br>
 		<b>Cast Delay:</b> ${(wand.fire_rate_wait/60).toFixed(2)}s<br>
 		<b>Recharge Time:</b> ${(wand.reload_time/60).toFixed(2)}s<br>
-		<b>Mana Max:</b> ${wand.mana_max} <br>
-		<b>Mana Charge Speed:</b> ${wand.mana_charge_speed}<br>
+		<b>Mana Max:</b> ${Math.floor(wand.mana_max)} <br>
+		<b>Mana Charge Speed:</b> ${Math.floor(wand.mana_charge_speed)}<br>
 		<b>Capacity:</b> ${Math.floor(wand.deck_capacity)}<br>
 		<b>Spread:</b> ${wand.spread_degrees}°<br>
 		<b>Speed Multiplier:</b> ${wand.speed_multiplier.toFixed(3)}<br>
@@ -275,6 +275,7 @@ export function updateTooltip(e, hit, tip) {
 				box_contents = '<b>Contains:</b><br>';
 				// TODO: Handle duplicates and just note the count instead of making a bunch of copies in the HTML
 				items.forEach(item => {
+					if (item.ignore) return; // Skip dummy items to identify
 					if (item.item === 'wand') {
 						box_wands.push(item);
 					}
@@ -290,7 +291,6 @@ export function updateTooltip(e, hit, tip) {
 						box_items.push({item: item.enemy});
 					}
 					else {
-						if (item.item === 'great_chest') return; // Skip dummy item to identify
 						box_items.push(item);
 					}
 				});
@@ -303,6 +303,10 @@ export function updateTooltip(e, hit, tip) {
 				if (box_containers.length > 0) {
 					box_contents += box_containers.map(container => generateItemHtml(container)).join('');
 				}
+				// Add special disclaimer for dragon
+				if (hit.type === 'dragon') {
+					box_contents += `<br><small style="font-size: 13px; color: red;">Note: You must kill the dragon before it moves, or the wand will be different than what is shown here!</small><br>`;
+				}
 				if (box_wands.length > 0) {
 					box_contents += box_wands.map(wand => generateWandHtml(wand)).join('');
 				}
@@ -310,7 +314,7 @@ export function updateTooltip(e, hit, tip) {
 				box_contents = '<i>Empty</i>';
 			}
 			if (box.materials) {
-				box_contents += `<br><small><b>Materials:</b> ${box.materials.join(', ')}</small>`;
+				box_contents += `<br><small><b>Puzzle materials:</b> ${box.materials}</small>`;
 			}
 			let displayType = hit.type.replace(/_/g, ' ').toUpperCase();
 			tip.innerHTML = `

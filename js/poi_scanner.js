@@ -12,7 +12,10 @@ import {
 	generatePortal, 
 	generateTriangleBossDrops, 
 	generateAlchemistBossDrops, 
-	generatePyramidBossDrops 
+	generatePyramidBossDrops, 
+    generateEndShop,
+    generateRobotEgg,
+    generateDragonBossDrops
 } from './misc_generation.js';
 
 // Prevent infinite loops with nested pixel scenes (which hopefully shouldn't happen...)
@@ -345,90 +348,128 @@ export function scanSpawnFunctions(biomeData, tileSpawns, worldSeed, ngPlusCount
     };
 }
 
-export function getSpecialPoIs(biomeData, worldSeed, ngPlusCount, pwIndex, perks={}) {
+export function getSpecialPoIs(biomeData, worldSeed, ngPlusCount, pwIndex, pwIndexVertical, perks={}) {
     const biomeMap = biomeData.pixels;
     //const t0 = performance.now();
     // Extra generation things
     let pois = [];
     // Concat multiple times might be slow? But this is only a few things anyway, usually like 1 ms
 
-    // Add HM PoIs to main layer
-    if (GENERATOR_CONFIG['temple_altar'].enabled) {
-        let hmPoIs = generateHolyMountainShops(worldSeed, ngPlusCount, pwIndex, perks);
-        pois = pois.concat(hmPoIs);
-    }
-    // Add Eye Room PoIs
-    //console.log("Generating Eye Room for PW", pwIndex);
-    // Check whether it exists first, for NGP
-    if (GENERATOR_CONFIG['snowcastle_hourglass_chamber'].enabled) {
-        let roomExists = true;
-        if (ngPlusCount > 0) {
-            // Check colors of biome map
-            const color = GENERATOR_CONFIG['snowcastle_hourglass_chamber'].color & 0xFFFFFF;
-            roomExists = biomeMap.some(p => (p & 0xFFFFFF) === color);
+    if (pwIndexVertical === 0) {
+        // Add HM PoIs to main layer
+        if (GENERATOR_CONFIG['temple_altar'].enabled) {
+            let hmPoIs = generateHolyMountainShops(worldSeed, ngPlusCount, pwIndex, perks);
+            pois = pois.concat(hmPoIs);
         }
-        if (roomExists) {
-            let eyeRoom = generateEyeRoom(worldSeed, ngPlusCount, pwIndex);
-            pois = pois.concat([eyeRoom]);
-        }
-    }
-
-    
-    if (pwIndex === 0 && ngPlusCount === 0) {
-        if (GENERATOR_CONFIG['snowcastle_cavern'].enabled) {
-            // Generate hourglass shop
-            // TODO: Also check existence? Depends on the side though (side param is available)
-            let hourglassShop = generateHourglassShop(worldSeed);
-            pois = pois.concat([hourglassShop]);
-        }
-
-        let portal = generatePortal(worldSeed);
-        if (portal) {
-            pois = pois.concat([portal]);
-        }
-    }
-
-    if (GENERATOR_CONFIG['excavationsite_cube_chamber'].enabled) {
-        let roomExists = true;
-        if (ngPlusCount > 0) {
-            // Check colors of biome map
-            const color = GENERATOR_CONFIG['excavationsite_cube_chamber'].color & 0xFFFFFF;
-            roomExists = biomeMap.some(p => (p & 0xFFFFFF) === color);
-        }
-        if (roomExists) {
-            let meditationCubeWand = generateMeditationCube(worldSeed, ngPlusCount, pwIndex, perks);
-            if (meditationCubeWand) {
-                pois = pois.concat([meditationCubeWand]);
+        // Add Eye Room PoIs
+        //console.log("Generating Eye Room for PW", pwIndex);
+        // Check whether it exists first, for NGP
+        if (GENERATOR_CONFIG['snowcastle_hourglass_chamber'].enabled) {
+            let roomExists = true;
+            if (ngPlusCount > 0) {
+                // Check colors of biome map
+                const color = GENERATOR_CONFIG['snowcastle_hourglass_chamber'].color & 0xFFFFFF;
+                roomExists = biomeMap.some(p => (p & 0xFFFFFF) === color);
             }
-        }
-    }
-
-    if (ngPlusCount === 0) {
-        if (GENERATOR_CONFIG['snowcave_secret_chamber'].enabled) {
-            let snowyRoomWands = generateSnowyRoom(worldSeed, pwIndex, perks);
-            if (snowyRoomWands) {
-                pois = pois.concat(snowyRoomWands);
+            if (roomExists) {
+                let eyeRoom = generateEyeRoom(worldSeed, ngPlusCount, pwIndex);
+                pois = pois.concat([eyeRoom]);
             }
         }
 
-        if (GENERATOR_CONFIG['wizardcave_entrance'].enabled) {
-            let triangleBossDrops = generateTriangleBossDrops(worldSeed, pwIndex);
-            if (triangleBossDrops) {
-                pois = pois.concat([triangleBossDrops]);
+        
+        if (pwIndex === 0 && ngPlusCount === 0) {
+            if (GENERATOR_CONFIG['snowcastle_cavern'].enabled) {
+                // Generate hourglass shop
+                // TODO: Also check existence? Depends on the side though (side param is available)
+                let hourglassShop = generateHourglassShop(worldSeed);
+                pois = pois.concat([hourglassShop]);
+            }
+
+            let portal = generatePortal(worldSeed);
+            if (portal) {
+                pois = pois.concat([portal]);
             }
         }
 
-        if (GENERATOR_CONFIG['secret_lab'].enabled) {
-            let alchemistBossDrops = generateAlchemistBossDrops(worldSeed, pwIndex);
-            if (alchemistBossDrops) {
-                pois = pois.concat([alchemistBossDrops]);
+        if (GENERATOR_CONFIG['excavationsite_cube_chamber'].enabled) {
+            let roomExists = true;
+            if (ngPlusCount > 0) {
+                // Check colors of biome map
+                const color = GENERATOR_CONFIG['excavationsite_cube_chamber'].color & 0xFFFFFF;
+                roomExists = biomeMap.some(p => (p & 0xFFFFFF) === color);
+            }
+            if (roomExists) {
+                let meditationCubeWand = generateMeditationCube(worldSeed, ngPlusCount, pwIndex, perks);
+                if (meditationCubeWand) {
+                    pois = pois.concat([meditationCubeWand]);
+                }
             }
         }
 
-        if (GENERATOR_CONFIG['pyramid_top'].enabled) {
-            let pyramidBossDrops = generatePyramidBossDrops(worldSeed, pwIndex);
-            if (pyramidBossDrops) {
-                pois = pois.concat([pyramidBossDrops]);
+        if (GENERATOR_CONFIG['robot_egg'].enabled) {
+            let roomExists = true;
+            if (ngPlusCount > 0) {
+                // Check colors of biome map
+                const color = GENERATOR_CONFIG['robot_egg'].color & 0xFFFFFF;
+                roomExists = biomeMap.some(p => (p & 0xFFFFFF) === color);
+            }
+            if (roomExists) {
+                let robotEgg = generateRobotEgg(worldSeed, ngPlusCount, pwIndex, perks);
+                if (robotEgg) {
+                    pois = pois.concat([robotEgg]);
+                }
+            }
+        }
+
+        if (ngPlusCount === 0) {
+            if (GENERATOR_CONFIG['snowcave_secret_chamber'].enabled) {
+                let snowyRoomWands = generateSnowyRoom(worldSeed, pwIndex, perks);
+                if (snowyRoomWands) {
+                    pois = pois.concat(snowyRoomWands);
+                }
+            }
+
+            if (GENERATOR_CONFIG['wizardcave_entrance'].enabled) {
+                let triangleBossDrops = generateTriangleBossDrops(worldSeed, pwIndex);
+                if (triangleBossDrops) {
+                    pois = pois.concat([triangleBossDrops]);
+                }
+            }
+
+            if (GENERATOR_CONFIG['secret_lab'].enabled) {
+                let alchemistBossDrops = generateAlchemistBossDrops(worldSeed, pwIndex);
+                if (alchemistBossDrops) {
+                    pois = pois.concat([alchemistBossDrops]);
+                }
+            }
+
+            if (GENERATOR_CONFIG['pyramid_top'].enabled) {
+                let pyramidBossDrops = generatePyramidBossDrops(worldSeed, pwIndex);
+                if (pyramidBossDrops) {
+                    pois = pois.concat([pyramidBossDrops]);
+                }
+            }
+
+            if (GENERATOR_CONFIG['dragoncave'].enabled) {
+                let dragonBossDrops = generateDragonBossDrops(worldSeed, pwIndex);
+                if (dragonBossDrops) {
+                    pois = pois.concat([dragonBossDrops]);
+                }
+            }
+        }
+    }
+    else if (ngPlusCount === 0 && pwIndex === 0) {
+        if (pwIndexVertical === 1) {
+            let hellShop = generateEndShop(worldSeed, ngPlusCount, pwIndexVertical);
+            if (hellShop) {
+                pois = pois.concat([hellShop]);
+            }
+        }
+        else if (pwIndexVertical === -1) {
+            let heavenShop = generateEndShop(worldSeed, ngPlusCount, pwIndexVertical);
+            if (heavenShop) {
+                pois = pois.concat([heavenShop]);
             }
         }
     }

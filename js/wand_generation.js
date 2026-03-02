@@ -20,7 +20,7 @@ export function createWand(ws, ng, x, y, wandType, addOffset, noMoreShuffle = fa
 }
 
 // This is just an implementation of random from table
-function getWandType(ws, ng, x, y, biome) {
+export function getWandType(ws, ng, x, y, biome) {
     if (!WAND_SPAWN_DATA[biome]) {
         //console.log(`Unknown biome for wand spawn: ${biome} at (${x}, ${y})`);
         return null;

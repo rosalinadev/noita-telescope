@@ -313,6 +313,16 @@ export const ALTAR_SPAWN_DATA = {
         rp: 0.0,
         px: 0,
         py: 0
+    },
+    'robot_egg': {
+        rg: 1.0,
+        x: 0,
+        y: 0,
+        xoff: 0.0,
+        yoff: 0.0,
+        rp: 0.0,
+        px: 0,
+        py: 0
     }
 };
 
@@ -433,6 +443,10 @@ export const WAND_SPAWN_DATA = {
     'snowcave_secret_chamber': {
         types: ['wand_level_03', 'wand_unshuffle_02'],
         weights: [0.5, 0.5]
+    },
+    'robot_egg': {
+        types: ['wand_level_05', 'wand_level_05_better', 'wand_unshuffle_03', 'wand_unshuffle_04'],
+        weights: [5, 5, 3, 2]
     }
 };
 

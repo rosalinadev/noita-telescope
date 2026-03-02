@@ -364,6 +364,12 @@ export const EXCAVATIONSITE_CUBE_CHAMBER_SPAWNS = [
 	{color: 0x366178, funcName: "spawn_teleporter" }
 ];
 
+export const ROBOT_EGG_SPAWNS = [
+	{color: 0xffeedd, funcName: "init" },
+	{color: 0x548f77, funcName: "spawn_teleport" },
+	{color: 0x709615, funcName: "spawn_chest" }
+];
+
 export const TEMPLES_COMMON_SPAWNS = [
 	{ color: 0x805000, funcName: "spawn_cloud_trap" },
 	{ color: 0x397780, funcName: "load_floor_rubble" },
@@ -466,6 +472,7 @@ export const BIOME_SPAWN_FUNCTION_MAP = {
 	"tower_end": [...DEFAULT_SPAWNS, ...TOWER_SPAWNS],
 	"snowcastle_cavern": [...DEFAULT_SPAWNS, ...SNOWCASTLE_CAVERN_SPAWNS],
 	"excavationsite_cube_chamber": [...DEFAULT_SPAWNS, ...EXCAVATIONSITE_CUBE_CHAMBER_SPAWNS],
+	"robot_egg": [...DEFAULT_SPAWNS, ...ROBOT_EGG_SPAWNS],
 	"biome_watchtower": [...DEFAULT_SPAWNS, ...TEMPLES_COMMON_SPAWNS, ...WATCHTOWER_SPAWNS],
 	"biome_barren": [...DEFAULT_SPAWNS, ...TEMPLES_COMMON_SPAWNS],
 	"biome_potion_mimics": [...DEFAULT_SPAWNS, ...TEMPLES_COMMON_SPAWNS],

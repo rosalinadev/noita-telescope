@@ -1,6 +1,7 @@
 // Used for additional common names
 // Note that the first alias is used as the display name
 const ALIASES = {
+	// Spell aliases
 	'LONG_DISTANCE_CAST': ['long-distance cast', 'long distance cast', 'ldc'],
 	'TELEPORT_PROJECTILE_SHORT': ['short teleport bolt', 'small teleport bolt', 'tp'],
 	'TELEPORT_PROJECTILE': ['teleport bolt', 'tp'],
@@ -14,17 +15,35 @@ const ALIASES = {
 	'DIVIDE_10': ['divide by 10', 'd10'],
 	'ALL_SPELLS': ['end of everything', 'eoe'],
 	'REGENERATION_FIELD': ['circle of vigour', 'circle of vigor', 'vigor', 'cov'],
+	'CASTER_CAST': ['inner spell', 'innerspell'],
+	// Item aliases
 	'great_chest': ['great treasure chest', 'great chest', 'gtc'],
 	'true_orb': ['34th orb', '34th', '34', 'orb 34'],
 	'mimic_potion': ['potion mimic', 'mimic potion', 'mimicium'],
 	'chest_leggy': ['leggy mimic', 'leggy', 'legs'],
 	'paha_silma': ['paha silmä', 'paha silma', 'silma', 'eye', 'evil eye'],
+	'refresh_mimic': ['refresh mimic', 'spell refresh mimic'],
+	'kuu': ['kuu', 'moon', 'akuu'],
+	'kammi': ['kammi', 'house', 'safe haven', 'safe', 'haven'],
+	'ukkoskivi': ['ukkoskivi', 'thunderstone', 'thunder stone', 'lightning stone'],
+	'kiuaskivi': ['kiuaskivi', 'fire stone', 'firestone', 'saunastone', 'sauna stone', 'heat stone'],
+	'monster_powder_test': ['monstrous powder', 'monster powder', 'monstruous', 'monsterous'],
 	// Some shortcuts for potions which get passed through the translations
 	'unstable teleportatium potion': ['unstable teleportatium potion', 'unstable tele potion', 'tele potion'],
 	'teleportatium potion': ['teleportatium potion', 'tele potion'],
 	'lively concoction potion': ['lively concoction potion', 'lc potion', 'lc'],
 	'alchemical precursor potion': ['alchemical precursor potion', 'ap potion', 'ap'],
 	// Funny "lc" and "ap" don't really work because they are substrings of other things
+	// Puzzle aliases
+	'oil_receptacle_puzzle': ['oil receptacle puzzle', 'receptacle', 'oil puzzle', 'mines puzzle', 'puzzle', 'ruusu', 'rose wand', 'rose'],
+	'steam_receptacle_puzzle': ['steam receptacle puzzle', 'receptacle', 'steam puzzle', 'coal pits puzzle', 'puzzle', 'kiekurakeppi', 'spiral rod', 'wooden wand', 'wood'],
+	'water_receptacle_puzzle': ['water receptacle puzzle', 'receptacle', 'water puzzle', 'snowy depths puzzle', 'puzzle', 'valtikka', 'scepter'],
+	'vault_puzzle_arpaluu': ['vault puzzle', 'puzzle', 'receptacle', 'arpaluu', 'skull wand', 'skull'],
+	'vault_puzzle_varpuluuta': ['vault puzzle', 'puzzle', 'receptacle', 'varpuluuta', 'broom wand', 'broom'],
+	// Silly things
+	'CHAINSAW': ['chainsaw', 'dunk', 'bald', 'dunkisbald', 'dunk is bald', 'rant'],
+	'MANA_REDUCE': ['add mana', 'mana reduce', 'addmana', 'lasiace', 'lasiacchi'],
+	'dragon': ['dragon', 'dwagon'],
 };
 
 // Stuff that wasn't in the translations file for some reason (mostly items)

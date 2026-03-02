@@ -38,9 +38,11 @@ export const GENERATOR_CONFIG = {
     'snowcave_secret_chamber': { color: 0xff18a0d6, name: "Snowcave Secret Chamber" },
     'snowcastle_cavern': { color: 0xff775ddb, name: "Hiisi Hourglass Shop" },
     'snowcastle_hourglass_chamber': { color: 0xff18d6d6, name: "Eye Room" },
+    'robot_egg': { color: 0xff9e4302, name: "Robot Egg" },
     'pyramid_top': { color: 0xffc88f5f, name: "Pyramid Boss"},
     'secret_lab': { color: 0xffbaa345, name: "Alchemist Boss" },
     'wizardcave_entrance': { color: 0xff804169, name: "Triangle Boss"},
+    'dragoncave': { color: 0xff364d24, name: "Dragoncave" },
     'temple_altar': { color: 0xff93cb4c, name: "Holy Mountain" },
     'boss_arena': { color: 0xff14EED7, name: "Boss Arena" },
     // Static tile

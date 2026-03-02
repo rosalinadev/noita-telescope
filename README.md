@@ -21,7 +21,8 @@ A web-based seed analyzer for [Noita](https://noitagame.com/), including a detai
 	- **Perks (that affect generation):** Account for perks like *Curse of Greed*, *No More Shuffle*, and *Extra Item in Holy Mountain* which affect generation. Normal perk generation in Holy Mountains is not implemented at the moment, as that wasn't a priority.
 	- **Region Toggles:** Selectively generate specific biomes or only biomes with useful objects to save performance. Regions without objects are toggled off by default.
 	- **Exclude Cosmetic Pixel Scenes:** Can be toggled to not generate pixel scenes without items in them, to save a bit of time while searching.
-- **Special Biomes and Bosses:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube and secret snowy chamber, the Hiisi shop and Eye Room, and the seed-based spell drops from the Alchemist, Pyramid, and Triangle bosses (wands dropped from bosses depend on the pixel where they were defeated, but spell drops are based only on the seed).
+- **Special Biomes:** and Bosses:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube, the secret snowy chamber, and the robot egg, and spell spawns from the Hiisi hourglass shop, the Eye Room, and the static heaven and hell shops.
+- **Boss Drops:** Shows the seed-based spell drops from the Alchemist, Pyramid, Triangle, and Dragon bosses. Wands dropped from bosses depend on the pixel where they were defeated, but spell drops are based only on the seed, so the dragon drops show the wand which will drop if the dragon is defeated before it moves from where it spawns.
 - **NG+ Orb Room Locations:** Orb rooms are shown on the map for each NG+ cycle except for NG0.
 - **Secrets:** Includes the hidden messages around the world, including the Wall Messages, a few background symbols, and the Eye Messages. (This is a major upgrade to the previous tool, "Lymm's Binoculars," which just showed the location of the eye messages for a seed, hence the name.)
 
@@ -79,7 +80,7 @@ The search tool supports a variety of filtering options. In the main search fiel
 	* Pudy248 https://github.com/pudy248/NoitaSeedSearcherCUDA & https://github.com/pudy248/NoitaMapViewer 
 	* NathanSnail https://github.com/NathanSnail/noitadata & https://github.com/NathanSnail/red_funs
 	* WUOTE https://noitamap.com/ & https://github.com/WUOTE/noita-builds-data
-	* chillie-ilya https://chillie-ilya.github.io/lymms-binoculars-web/ (https://github.com/chillie-ilya/lymms-binoculars-web)
+	* Chillie-ilya https://chillie-ilya.github.io/lymms-binoculars-web/ (https://github.com/chillie-ilya/lymms-binoculars-web)
 	* and many others for help with testing
 *   All game assets (biome maps, Wang tiles, pixel scenes, sprites, images, icons, and translations) belong to Nolla Games.
 

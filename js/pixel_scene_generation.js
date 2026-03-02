@@ -81,10 +81,6 @@ export async function loadPixelSceneData() {
 	}
 	console.log(`Loaded ${loaded} pixel scenes.`);
 }
-// TODO: Move to main to make sure it shows the loading screen
-console.log("Loading pixel scene data...");
-await loadPixelSceneData();
-console.log("Finished loading pixel scene data.");
 
 // This function scans the pixel scene image for blocked room colors, and returns an array of room objects with their coordinates and colors
 export function blockOutRooms(pixels, width, height) {

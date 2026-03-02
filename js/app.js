@@ -16,7 +16,7 @@ import { COALMINE_ALT_SCENES } from './pixel_scene_config.js';
 import { createBiomeMapOverlay } from './image_processing.js';
 //import { BIOME_SPAWN_FUNCTION_MAP } from './spawn_function_config.js';
 import { debugBiomeEdgeNoise } from './edge_noise.js';
-import { reloadPixelSceneCache } from './pixel_scene_generation.js';
+import { loadPixelSceneData, reloadPixelSceneCache } from './pixel_scene_generation.js';
 
 export const app = {
 	// TODO: A lot of these are old and unused and could probably be cleaned up
@@ -579,6 +579,11 @@ export const app = {
 			this.assets.ng0 = await load('./data/biome_maps/biome_map.png');
 			this.assets.ngp = await load('./data/biome_maps/biome_map_newgame_plus.png');
 		} catch(e) { console.error("Base assets failed to load."); console.error(e); }
+		console.log("Loading pixel scene data...");
+		// Preload pixel scenes
+		// TODO: Since this is a lot of files, it's slow on github pages. Need to move this into a zip file or something to load it as one request
+		await loadPixelSceneData();
+		console.log("Finished loading pixel scene data.");
 		this.setLoading(false);
 	},
 
@@ -722,7 +727,7 @@ export const app = {
 		if (rescan || !this.pixelScenesByPW[`${this.pw},${this.pwVertical}`] || !this.poisByPW[`${this.pw},${this.pwVertical}`]) {
 			const scanResults = scanSpawnFunctions(this.biomeData, this.tileSpawns, this.seed, this.ngPlusCount, this.pw, this.pwVertical, this.skipCosmeticScenes, this.perks);
 			this.pixelScenesByPW[`${this.pw},${this.pwVertical}`] = scanResults.finalPixelScenes;
-			const specialPoIs = this.pwVertical === 0 ? getSpecialPoIs(this.biomeData, this.seed, this.ngPlusCount, this.pw, this.perks) : [];
+			const specialPoIs = getSpecialPoIs(this.biomeData, this.seed, this.ngPlusCount, this.pw, this.pwVertical, this.perks);
 			this.poisByPW[`${this.pw},${this.pwVertical}`] = scanResults.generatedSpawns.concat(specialPoIs);
 		}
 
