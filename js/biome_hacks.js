@@ -18,7 +18,7 @@ export function applyMainBiomeHack(chunkX, pixels, width, height, biomeName, isN
 	let startX = getMainBiomePathStartX(biomeName, chunkX, isNGP);
 	//console.log(`Applying main biome hack for ${biomeName} at chunk ${chunkX}, startX: ${startX}`);
 
-	for (let y = 0; y < 10; y++) {
+	for (let y = 0; y < 11; y++) {
 		for (let x = startX; x < startX + 7; x++) {
 			if (x < width && y < height) {
 				let idx = (y * width + x) * 3;
