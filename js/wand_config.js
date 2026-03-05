@@ -242,7 +242,9 @@ export const PREMADE_WANDS = [
         mana_max: 220,
         mana_charge_speed: 45,
         speed_multiplier: 1.03398,
-        sprite: 'wand_0484'
+        sprite: 'wand_0484',
+		grip: {x:2,y:2},
+		tip: {x:10,y:2}
     },
     {
         premade_index: 2,
@@ -256,7 +258,9 @@ export const PREMADE_WANDS = [
         mana_max: 250,
         mana_charge_speed: 53,
         speed_multiplier: 0.982264,
-        sprite: 'wand_0654'
+        sprite: 'wand_0654',
+		grip: {x:1,y:2},
+		tip: {x:10,y:2}
     },
     {
         premade_index: 3,
@@ -270,7 +274,9 @@ export const PREMADE_WANDS = [
         mana_max: 180,
         mana_charge_speed: 54,
         speed_multiplier: 0.994967,
-        sprite: 'wand_0958'
+        sprite: 'wand_0958',
+		grip: {x:2,y:3},
+		tip: {x:10,y:3}
     },
     {
         premade_index: 4,
@@ -284,7 +290,9 @@ export const PREMADE_WANDS = [
         mana_max: 190,
         mana_charge_speed: 51,
         speed_multiplier: 0.934037,
-        sprite: 'wand_0516'
+        sprite: 'wand_0516',
+		grip: {x:1,y:5},
+		tip: {x:8,y:5}
     },
     {
         premade_index: 5,
@@ -298,7 +306,9 @@ export const PREMADE_WANDS = [
         mana_max: 210,
         mana_charge_speed: 52,
         speed_multiplier: 0.824541,
-        sprite: 'wand_0484'
+        sprite: 'wand_0484',
+		grip: {x:2,y:2},
+		tip: {x:10,y:2}
     },
     {
         premade_index: 6,
@@ -312,7 +322,9 @@ export const PREMADE_WANDS = [
         mana_max: 250,
         mana_charge_speed: 49,
         speed_multiplier: 0.985946,
-        sprite: 'wand_0058'
+        sprite: 'wand_0058',
+		grip: {x:2,y:3},
+		tip: {x:10,y:3}
     },
     {
         premade_index: 7,
@@ -326,7 +338,9 @@ export const PREMADE_WANDS = [
         mana_max: 170,
         mana_charge_speed: 55,
         speed_multiplier: 0.955205,
-        sprite: 'wand_0120'
+        sprite: 'wand_0120',
+		grip: {x:1,y:8},
+		tip: {x:8,y:8}
     },
     {
         premade_index: 8,
@@ -340,7 +354,9 @@ export const PREMADE_WANDS = [
         mana_max: 160,
         mana_charge_speed: 52,
         speed_multiplier: 0.987743,
-        sprite: 'wand_0898'
+        sprite: 'wand_0898',
+		grip: {x:2,y:2},
+		tip: {x:10,y:2}
     },
     {
         premade_index: 9,
@@ -354,7 +370,9 @@ export const PREMADE_WANDS = [
         mana_max: 160,
         mana_charge_speed: 46,
         speed_multiplier: 0.853983,
-        sprite: 'wand_0724'
+        sprite: 'wand_0724',
+		grip: {x:1,y:1},
+		tip: {x:10,y:1}
     },
     {
         premade_index: 10,
@@ -368,7 +386,9 @@ export const PREMADE_WANDS = [
         mana_max: 210,
         mana_charge_speed: 46,
         speed_multiplier: 1.05598,
-        sprite: 'wand_0326'
+        sprite: 'wand_0326',
+		grip: {x:1,y:3},
+		tip: {x:8,y:3}
     },
     {
         premade_index: 11,
@@ -382,7 +402,9 @@ export const PREMADE_WANDS = [
         mana_max: 250,
         mana_charge_speed: 50,
         speed_multiplier: 1.02408,
-        sprite: 'wand_0374'
+        sprite: 'wand_0374',
+		grip: {x:1,y:3},
+		tip: {x:8,y:3}
     },
     {
         premade_index: 12,
@@ -396,7 +418,9 @@ export const PREMADE_WANDS = [
         mana_max: 250,
         mana_charge_speed: 49,
         speed_multiplier: 0.995504,
-        sprite: 'wand_0324'
+        sprite: 'wand_0324',
+		grip: {x:1,y:4},
+		tip: {x:10,y:4}
     },
     {
         premade_index: 13,
@@ -410,7 +434,9 @@ export const PREMADE_WANDS = [
         mana_max: 220,
         mana_charge_speed: 51,
         speed_multiplier: 0.969829,
-        sprite: 'wand_0309'
+        sprite: 'wand_0309',
+		grip: {x:1,y:3},
+		tip: {x:9,y:3}
     },
     {
         premade_index: 14,
@@ -424,7 +450,9 @@ export const PREMADE_WANDS = [
         mana_max: 210,
         mana_charge_speed: 50,
         speed_multiplier: 0.988051,
-        sprite: 'wand_0230'
+        sprite: 'wand_0230',
+		grip: {x:1,y:3},
+		tip: {x:8,y:3}
     },
     {
         premade_index: 15,
@@ -438,7 +466,9 @@ export const PREMADE_WANDS = [
         mana_max: 170,
         mana_charge_speed: 49,
         speed_multiplier: 0.904531,
-        sprite: 'wand_0063'
+        sprite: 'wand_0063',
+		grip: {x:1,y:5},
+		tip: {x:14,y:5}
     },
     {
         premade_index: 16,
@@ -452,7 +482,9 @@ export const PREMADE_WANDS = [
         mana_max: 750,
         mana_charge_speed: 10,
         speed_multiplier: 1.07678,
-        sprite: 'wand_0830'
+        sprite: 'wand_0830',
+		grip: {x:2,y:5},
+		tip: {x:12,y:5}
     },
     {
         premade_index: 17,
@@ -466,7 +498,9 @@ export const PREMADE_WANDS = [
         mana_max: 190,
         mana_charge_speed: 52,
         speed_multiplier: 0.987879,
-        sprite: 'wand_1000'
+        sprite: 'wand_1000',
+		grip: {x:2,y:2},
+		tip: {x:10,y:2}
     },
 ];
 
@@ -1472,4 +1506,5 @@ export const WAND_SHAPES = [
 	[997, 1, 3, 15, 3, 0, 0, 1, 4, 0, 2],
 	[998, 1, 7, 18, 7, 4, 2, 1, 5, 2, 2],
 	[999, 2, 5, 14, 5, 4, 1, 0, 4, 1, 1],
+	// 1000 exists but only as a prebuilt wand
 ];

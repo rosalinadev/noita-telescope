@@ -24,7 +24,7 @@ export function checkPotionAltar(ws, ng, x, y, biome) {
     }
     */
     let r = prng.ProceduralRandom( ws + ng, x, y );
-    let rp = (ALTAR_SPAWN_DATA[biome].rp) ? ALTAR_SPAWN_DATA[biome].rp : 0.65;
+    let rp = (ALTAR_SPAWN_DATA[biome].rp !== undefined) ? ALTAR_SPAWN_DATA[biome].rp : 0.65;
     if (r < rp) {
         return null;
     }
@@ -52,13 +52,13 @@ export function spawnPotionAltar(ws, ng, x, y, biome) {
     }
     */
     let r = prng.ProceduralRandom( ws + ng, x, y );
-    let rp = (ALTAR_SPAWN_DATA[biome].rp) ? ALTAR_SPAWN_DATA[biome].rp : 0.65;
+    let rp = (ALTAR_SPAWN_DATA[biome].rp !== undefined) ? ALTAR_SPAWN_DATA[biome].rp : 0.65;
     if (r < rp) {
         return null;
     }
 
-    let px = (ALTAR_SPAWN_DATA[biome].px ? ALTAR_SPAWN_DATA[biome].px : 0);
-    let py = (ALTAR_SPAWN_DATA[biome].py ? ALTAR_SPAWN_DATA[biome].py : 0);
+    let px = (ALTAR_SPAWN_DATA[biome].px !== undefined) ? ALTAR_SPAWN_DATA[biome].px : 0;
+    let py = (ALTAR_SPAWN_DATA[biome].py !== undefined) ? ALTAR_SPAWN_DATA[biome].py : 0;
 
     let itemX = x + px;
     let itemY = y + py;

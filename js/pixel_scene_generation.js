@@ -62,7 +62,7 @@ export async function loadPixelSceneData() {
 				const key = getPixelSceneKey(biome, scene.name);
 				if (!PIXEL_SCENE_DATA[key]) {
 					const url = `./data/pixel_scenes/${getBiomeAlias(biome)}/${scene.name}.png`;
-					const cleanBlob = await sanitizePng(url);		
+					const cleanBlob = await sanitizePng(url);
 					const img = await createImageBitmap(cleanBlob);
 
 					const canvas = new OffscreenCanvas(img.width, img.height);

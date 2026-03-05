@@ -254,8 +254,9 @@ function generateSpellListHtml(spells, capacity) {
 	for (let i = 0; i < Math.floor(capacity); i++) {
 		const spellName = spells[i];
 		html += `<div class="slot">`;
-		if (spellName === '_UNIDENTIFIED') {
-			html += `<img class="spell-icon" src="./data/spell_sprites/_unidentified.png" title="Uses frame-based RNG so can't be determined ahead of time">`;
+		// Turns out it doesn't like starting with an underscore, even though it works fine locally.
+		if (spellName === 'UNIDENTIFIED') {
+			html += `<img class="spell-icon" src="./data/spell_sprites/unidentified.png" title="Uses frame-based RNG so can't be determined ahead of time">`;
 		}
 		else if (spellName) {
 			const icon = spellName.toLowerCase() + ".png";

@@ -113,7 +113,7 @@ export const ALTAR_SPAWN_DATA = {
         y: -14,
         xoff: -11.631,
         yoff: 10.2257,
-        rp: 0.07,
+        rp: 0, // No threshold here
         px: 0,
         py: -6
     },
@@ -123,7 +123,7 @@ export const ALTAR_SPAWN_DATA = {
         y: -14,
         xoff: -11.631,
         yoff: 10.2257,
-        rp: 0.03, // File indicates it should be 0.06 but experimentally it seems to be half of that...
+        rp: 0, // No threshold here
         px: 0,
         py: -6
     },
@@ -143,7 +143,7 @@ export const ALTAR_SPAWN_DATA = {
         y: -14, // No wands here anyway
         xoff: -11.631,
         yoff: 10.2257,
-        rp: 0.65, // No threshold is making sense for this one
+        rp: 0.65,
         px: 5,
         py: -4,
         gx: 0,

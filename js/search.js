@@ -376,7 +376,7 @@ async function findNextPWMatches(isIterative = true) {
 		if (!app.poisByPW[`${targetPW},${targetPWVertical}`] || !app.pixelScenesByPW[`${targetPW},${targetPWVertical}`]) {
 			const scanResults = scanSpawnFunctions(app.biomeData, app.tileSpawns, seed, ngPlusCount, targetPW, targetPWVertical, app.skipCosmeticScenes, app.perks);
 			const specialPoIs = getSpecialPoIs(app.biomeData, seed, ngPlusCount, targetPW, targetPWVertical, app.perks);
-			const staticSpawnResults = addStaticPixelScenes(targetPW, targetPWVertical);
+			const staticSpawnResults = addStaticPixelScenes(seed, ngPlusCount, targetPW, targetPWVertical, app.biomeData, app.skipCosmeticScenes);
 			specialPoIs.push(...staticSpawnResults.pois);
 			app.pixelScenesByPW[`${targetPW},${targetPWVertical}`] = scanResults.finalPixelScenes.concat(staticSpawnResults.pixelScenes);
 			app.poisByPW[`${targetPW},${targetPWVertical}`] = scanResults.generatedSpawns.concat(specialPoIs);

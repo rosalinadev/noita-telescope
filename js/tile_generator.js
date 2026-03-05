@@ -305,6 +305,7 @@ export async function generateBiomeTiles(biomePixels, width, height, biomeConfig
         const { regions, bboxes } = findBiomeRegions(biomePixels, width, height, conf.color);
         
         for (let i = 0; i < regions.length; i++) {
+            if (bboxes[i][3] - bboxes[i][1] > 20 && bboxes[i][2] - bboxes[i][0] > 20) console.log(`Generated 20+ chunk region for ${biomeName}: ${bboxes[i][0]},${bboxes[i][1]} to ${bboxes[i][2]},${bboxes[i][3]}`);
             if (!biomeConfig[biomeName].wangFile) continue;
             if (biomeConfig[biomeName].wangFile.includes('static')) {
                 // Static tile, just use the image as the whole region
@@ -358,6 +359,27 @@ export async function generateBiomeTiles(biomePixels, width, height, biomeConfig
 
                 // Clear path, fill coffee, randomize colors
                 applyPostprocessingHacks(rawResult.buffer, rawResult.width, rawResult.height, worldSeed, ngPlus, finalPath, conf.randomColors);
+
+                // Extend region (fix for 20+ chunk width/height regions)
+                // The final size of the output is 1024 x 1028 (I think) and the first 4 rows are ignored.
+                // Then the 1024 part repeats in both directions.
+                if (rawResult.width > 1024 || rawResult.height > 1028) {
+                    console.log(`[Generator] Applying extension hack for ${biomeName} region ${i} due to large dimensions (${rawResult.width}x${rawResult.height})`);
+                    // Only the first 1024x1028 area is actually generated, the rest is empty.
+                    for (let y = 0; y < rawResult.height; y++) {
+                        for (let x = 0; x < rawResult.width; x++) {
+                            if (y < 4) continue; // This part is ignored anyway
+                            if (x < 1024 && y < 1028) continue; // This part is already generated
+                            const srcX = x % 1024;
+                            const srcY = 4 + (y-4) % 1024;
+                            const srcIdx = (srcY * rawResult.width + srcX) * 3;
+                            const dstIdx = (y * rawResult.width + x) * 3;
+                            rawResult.buffer[dstIdx] = rawResult.buffer[srcIdx];
+                            rawResult.buffer[dstIdx + 1] = rawResult.buffer[srcIdx + 1];
+                            rawResult.buffer[dstIdx + 2] = rawResult.buffer[srcIdx + 2];
+                        }
+                    }
+                }
 
                 const { minX, minY, width: mapW, mapH: renderH } = rawResult;
                 const canvas = document.createElement('canvas');

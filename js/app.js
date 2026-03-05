@@ -69,7 +69,6 @@ export const app = {
 		this.recolorOffscreen = document.createElement('canvas');
 		this.recolorOffscreenHeaven = document.createElement('canvas');
 		this.recolorOffscreenHell = document.createElement('canvas');
-		this.surfaceOverlay = document.createElement('canvas');
 		const vp = document.getElementById('view');
 
 		const resize = () => {
@@ -180,6 +179,15 @@ export const app = {
 			this.tileOverlaysByPW = {}; // Clear cached overlays so they will be regenerated with the new mode
 			this.generate(false, true);
 		};
+		document.getElementById('debug-custom-art').onchange = async () => {
+			if (!document.getElementById('debug-custom-art').checked) {
+				this.surfaceOverlay = null;
+			}
+			else {
+				this.surfaceOverlay = await this.getSurfaceOverlay();
+			}
+			this.draw();
+		}
 		document.getElementById('debug-draw').onchange = () => this.draw();
 		document.getElementById('debug-path').onchange = () => this.draw();
 		document.getElementById('debug-hide-pois').onchange = () => this.draw();
@@ -720,6 +728,10 @@ export const app = {
 		// TODO: Since this is a lot of files, it's slow on github pages. Need to move this into a zip file or something to load it as one request
 		await loadPixelSceneData();
 		console.log("Finished loading pixel scene data.");
+
+		if (document.getElementById('debug-custom-art').checked) {
+			this.surfaceOverlay = await this.getSurfaceOverlay();
+		}
 		this.setLoading(false);
 	},
 
@@ -1020,17 +1032,13 @@ export const app = {
 		//this.getSurfaceOverlay();
 	},
 
-	getSurfaceOverlay() {
-		// Quick for testing
-		this.surfaceOverlay = document.createElement('canvas');
-		this.surfaceOverlay.width = this.w * 16;
-		this.surfaceOverlay.height = this.h * 16;
-        const ctx = this.surfaceOverlay.getContext('2d');
-		const img = new Image();
-		img.onload = () => {
-			ctx.drawImage(img, 0, 0);
-		}
-		img.src = './data/biome_maps/surface_overlay.png';
+	async getSurfaceOverlay() {
+		const url = './data/biome_maps/surface_overlay.png';
+		const cleanBlob = await sanitizePng(url);
+		const img = await createImageBitmap(cleanBlob);
+		this.surfaceOverlay = new OffscreenCanvas(img.width, img.height);
+		const ctx = this.surfaceOverlay.getContext('2d');
+		ctx.drawImage(img, 0, 0);
         return this.surfaceOverlay;
 	},
 
@@ -1071,7 +1079,10 @@ export const app = {
 
 		// Render debug surface overlay 
 		if (this.surfaceOverlay) { 
-			this.ctx.drawImage(this.surfaceOverlay, 0, 0, this.w * 512, this.h * 512);
+			if (this.pwVertical === 0 && this.ngPlusCount === 0) {
+				// TODO: Need the PW/NG+ versions of the overlay, for now disable
+				this.ctx.drawImage(this.surfaceOverlay, 0, 0, this.w * 512, this.h * 512);
+			}
 		}
 
 		const showBoxes = document.getElementById('debug-draw').checked;
@@ -1449,6 +1460,6 @@ export const app = {
 	}
 };
 
-const USE_DAILY_RUN_SEED = true; // Avoid spamming while debugging lol
+const USE_DAILY_RUN_SEED = false; // Avoid spamming while debugging lol
 
 app.init();

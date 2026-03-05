@@ -195,9 +195,6 @@ function generateLevel1Wand(ws, ng, x, y, type) {
     let gun_reference = PREMADE_WANDS[index % PREMADE_WANDS.length];
     let gun = JSON.parse(JSON.stringify(gun_reference)); // This is so stupid
     gun['cards'] = [];
-    // Don't care
-    gun['grip'] = {x: 0, y: 0};
-    gun['tip'] = {x: 0, y: 0};
     gun['is_rare'] = 0;
     gun['wand_type'] = type;
     gun['force_unshuffle'] = 0;

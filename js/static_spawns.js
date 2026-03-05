@@ -1,3 +1,4 @@
+import { BIOMES_WITHOUT_WAVY_EDGE } from "./generator_config.js";
 import { NollaPrng } from "./nolla_prng.js";
 import { loadPixelScene } from "./pixel_scene_generation.js";
 import { getWorldCenter, getWorldSize } from "./utils.js";
@@ -121,6 +122,7 @@ const PIXEL_SCENE_BIOMES = {
 */
 
 // I really don't care about this but whatever
+// TODO: Skip cosmetic not used here but removes most things
 export function addStaticPixelScenes(ws, ng, pwIndex, pwIndexVertical, biomeData, skipCosmeticPixelScenes=false) {
 	const t0 = performance.now();
 
@@ -256,11 +258,17 @@ export function addStaticPixelScenes(ws, ng, pwIndex, pwIndexVertical, biomeData
 		const width = holyMountainWidths[ngpkey][i];
 		const start = holyMountainStarts[ngpkey][i];
 		for (let j = 0; j < width; j++) {
+			// Check whether chunk is correct first
+			const idx = ((depth + 14) * mapWidth) + start + j + mapWidth/2;
+			const biomeColor = biomeData.pixels[idx] & 0xffffff;
+			// Skip any chunk that is not holy mountain related (these have straight edges... This is a bit hacky)
+			// TODO: Make a list of holy mountain biome colors instead, even though it's nearly identical to this list
+			if (!BIOMES_WITHOUT_WAVY_EDGE.has(biomeColor)) continue;
 			const basin = {x: 512 * (start + j) + pwIndex*mapWidth*512, y: 512 * depth};
 			let material = '';
 			if (basin.y > 12000) material = '_ending'; // boss_arena... is this the same?
 			else {
-				prng.SetRandomSeed(ws, basin.x, basin.y);
+				prng.SetRandomSeed(ws + ng, basin.x, basin.y);
 				const randomTop = prng.Random(1, 50);
 				if (randomTop === 5) material = '_water';
 				else if (randomTop === 8) material = '_blood';
@@ -446,7 +454,7 @@ function generateExperimentalWand2(x, y) {
 		mana_max: '500 - 600',
 		is_rare: false,
 		always_casts: [],
-		cards: ['_UNIDENTIFIED', 'SPITTER_TIER_3', '_UNIDENTIFIED', 'SPITTER_TIER_3', '_UNIDENTIFIED', 'SPITTER_TIER_3', 'COLOUR_INVIS', 'SPITTER_TIER_3', 'COLOUR_RAINBOW', 'SPITTER_TIER_3'],
+		cards: ['UNIDENTIFIED', 'SPITTER_TIER_3', 'UNIDENTIFIED', 'SPITTER_TIER_3', 'UNIDENTIFIED', 'SPITTER_TIER_3', 'COLOUR_INVIS', 'SPITTER_TIER_3', 'COLOUR_RAINBOW', 'SPITTER_TIER_3'],
 		// TODO: It would be cool to use a gif for random color but meh
 		//cards: ['RANDOM_COLOUR', 'SPITTER_TIER_3', 'RANDOM_COLOUR', 'SPITTER_TIER_3', 'RANDOM_COLOUR', 'SPITTER_TIER_3', 'COLOUR_INVIS', 'SPITTER_TIER_3', 'COLOUR_RAINBOW', 'SPITTER_TIER_3'],
 	};
@@ -511,7 +519,7 @@ function generateGoodWand1(x, y) {
 		mana_max: '800 - 1000',
 		is_rare: false,
 		always_casts: [],
-		cards: ['_UNIDENTIFIED'],
+		cards: ['UNIDENTIFIED'],
 	};
 }
 
@@ -553,7 +561,7 @@ function generateGoodWand3(x, y) {
 		mana_max: '1200 - 1500',
 		is_rare: false,
 		always_casts: [],
-		cards: ['_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED','_UNIDENTIFIED'],
+		cards: ['UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED','UNIDENTIFIED'],
 	};
 }
 

@@ -60,6 +60,11 @@ export function stbhw_generate_image(ts, pixels, stride_in_bytes, w, h) {
     const sidelen = ts.short_side_len;
     if (sidelen <= 0) return null;
 
+    //const orig_w = w, orig_h = h;
+    // TODO: Neither way seems to work when the width is over 20 chunks. However, the vertical correction does seem to help...
+    //w = Math.min(w, 1024);
+    h = Math.min(h, 1028); // Why
+
     // These are the dimensions of the TILE GRID (Logic Space)
     const xmax = Math.floor(w / sidelen) + 6;
     const ymax = Math.floor(h / sidelen) + 6;

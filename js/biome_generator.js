@@ -226,8 +226,10 @@ export function generateBiomeData(seed, ng, basePixels, width, height) {
     painter.rect(29, 35, 11, 3, b.crypt, 0);
 
     if (doWalls) {
-        painter.rect(23, 15, rng.Random(2, 6), 25, 0xFF3D3D3D, 0);
-        painter.rect(33 + (4 - rng.Random(1, 4)), 16, 10, 22, 0xFF3D3D3D, 0);
+        const wallLeft = rng.Random(2, 6);
+        const wallRight = rng.Random(1, 4);
+        painter.rect(23, 15, wallLeft, 25, 0xFF3D3D3D, 0);
+        painter.rect(33 + (4 - wallRight), 16, wallRight, 22, 0xFF3D3D3D, 0);
     }
 
     // 6. Orbs

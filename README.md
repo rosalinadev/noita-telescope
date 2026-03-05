@@ -14,14 +14,14 @@ A web-based seed analyzer for [Noita](https://noitagame.com/), including a detai
 - **Detailed Object Inspection:** Hover over generated objects to see exact details:
 	- **Wands:** Stats (shuffle, spells/cast, cast delay, recharge time, max mana, mana charge speed, capacity, spread, speed, length), always casts, and spells.
 	- **Items:** Flask/pouch contents, chest info with counts of duplicated items, active/inactive status of runestones.
-	- **Enemies:** Natural taikasauva spawns are supported, but they have a tendency to unload, so they aren't always reliable. Some special enemy spawns (all kinds of mimics, and the dragon when it spawns in unusual places) are supported.
+	- **Enemies:** Natural taikasauva spawns are supported, but they have a tendency to unload, so they aren't always reliable. Some special enemy spawns (all kinds of mimics, and the dragon when it spawns in unusual places) are supported. Other enemy spawns are not yet implemented.
 - **Configuration Options:**
-	- **New Game+ Support:** Simulate NG+ cycles, generating new tile maps. Includes support for overlap biomes.
+	- **New Game+ Support:** Simulate NG+ cycles, generating new tile maps, for every possible NG+ count. Includes support for overlap biomes.
 	- **Unlockables:** Toggle specific spell unlock flags that affect generation. There is an option to upload your flags folder to sync your unlocks.
 	- **Perks (that affect generation):** Account for perks like *Curse of Greed*, *No More Shuffle*, and *Extra Item in Holy Mountain* which affect generation. Normal perk generation in Holy Mountains is not implemented at the moment, as that wasn't a priority.
-	- **Region Toggles:** Selectively generate specific biomes or only biomes with useful objects to save performance. Regions without objects are toggled off by default.
+	- **Region Toggles:** Selectively generate specific biomes or only biomes with useful objects to save performance. Can be used to disable regions you don't want to search.
 	- **Exclude Cosmetic Pixel Scenes:** Can be toggled to not generate pixel scenes without items in them, to save a bit of time while searching.
-- **Special Biomes:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube, the secret snowy chamber, and the robot egg, and spell spawns from the Hiisi hourglass shop, the Eye Room, and the static heaven and hell shops.
+- **Special Biomes:** Includes spells, wands, and pacifist chests from Holy Mountains, wand spawns from the Meditation Cube, the secret snowy chamber, and the robot egg, and spell spawns from the Hiisi hourglass shop, the Eye Room, and the static heaven and hell shops, as well as the custom wands. Note that some drops are frame-dependent and not just seed dependent, so they cannot be predicted here. Examples include the coral chest, the dark chest, the tower wands, and the experimental wands.
 - **Boss Drops:** Shows the seed-based spell drops from the Alchemist, Pyramid, Triangle, and Dragon bosses. Wands dropped from bosses depend on the pixel where they were defeated, but spell drops are based only on the seed, so the dragon drops show the wand which will drop if the dragon is defeated before it moves from where it spawns.
 - **NG+ Orb Room Locations:** Orb rooms are shown on the map for each NG+ cycle except for NG0.
 - **Secrets:** Includes the hidden messages around the world, including the Wall Messages, a few background symbols, and the Eye Messages. (This is a major upgrade to the previous tool, "Lymm's Binoculars," which just showed the location of the eye messages for a seed, hence the name.)
@@ -62,7 +62,7 @@ The search tool supports a variety of filtering options. In the main search fiel
 *   **Edge Cases:** Biome boundaries (Edge Noise) are calculated, but do not consistently agree with the way pixel scenes and spawns are filtered at biome edges in game. As a result, there may be some false positives and false negatives. If you toggle the "Enable Edge Noise" debug option and the spawn you are interested in disappears (or appears), it may not be real. But sometimes it will be. This is a work in progress.
 *   **Vertical Parallel Worlds:** Implemented, and seems to be working for the most part. There are some issues with some spells in hell spawning just above a chunk and falling into the void, and these end up looking like false positives.
 *   **Perks:** Not implemented, and not a high priority considering how many tools there already are which can find perks for a seed.
-*   **Static Pixel Scenes:** Currently the world view does not include pixel scenes which are the same in every seed, like the Holy Mountains, tree, orb rooms, etc. These are not included because they are not particularly useful for finding items, since they are always the same. I might update these in the future but my main priority is getting things functional before working on aesthetics.
+*   **Static Pixel Scenes:** Static pixel scenes which can vary by seed (e.g. the dark cave, friend room, hiisi shop) are now included. Other static pixel scenes are not loaded by default in order to save time.
 *   **Missing Pixel Scenes:** Some pixel scenes may be missing in some biomes, some of which might have useful items, that I missed. Most pixel scenes are implemented, though.
 *   **Unlocks:** Which spells appear on wands and in shops depends on your unlocks, and not just in the sense that you can't find ones you haven't unlocked, so if there is an incorrect spell prediction somewhere, it is most likely due to the unlock settings not matching your game. There are settings to toggle all the unlock flags, but this might be a bit tedious, so I added an option to upload your flags to sync it. The flags folder is in `save00/persistent`.
 *   **Pathfinding:** The pathfinding methods might not be perfectly reimplemented, so there could be seeds where some biomes do not generate with tiles matching what is in the game. From testing so far, it seems to be working. Let me know if you find any seeds like this and I can try to fix them.
@@ -71,6 +71,7 @@ The search tool supports a variety of filtering options. In the main search fiel
 *   **"Coalmine Alt Shrine":** There is exactly one pixel scene in the game which is *unique*, the "shrine" pixel scene in the Collapsed Mines. You will get different pixel scene generation depending on whether or not this pixel scene has ever been encountered/loaded. A debug option will toggle whether or not it has been visited to accurately predict pixel scenes in the Collapsed Mines in either case. If pixel scenes are incorrect for you in this biome, it is probably because of this.
 *   **Overlap Biomes:** These mostly work but may still have some issues with predicting incorrect spawns, mostly due to pixel scene bounds checking logic not being fully understood. There is also the possibility of getting an infinite loop of pixel scene nesting, though I have not encountered this yet. Aside from edge cases, overlap biomes do mostly work as intended, though.
 *   **Cosmetics:** Purely cosmetic pixel scenes can be skipped for a minor speedup in searching, but in some rare cases this may exclude actual spawns (e.g. overlap biomes that spawn something inside a cosmetic nested spawn pixel).
+*   **Enemy Spawns:** Not included, but might be done in the future.
 *   **Only English Supported:** The translations file used for item name lookups supports other languages, but currently only English is supported in this app.
 *   **The Eye Messages have not yet been solved:** If you're interested in the current state of progress on them, you can check out [this wiki](https://github.com/Lymm37/eye-messages/wiki).
 
@@ -82,6 +83,7 @@ The search tool supports a variety of filtering options. In the main search fiel
 	* NathanSnail https://github.com/NathanSnail/noitadata & https://github.com/NathanSnail/red_funs
 	* WUOTE https://noitamap.com/ & https://github.com/WUOTE/noita-builds-data
 	* Chillie-ilya https://chillie-ilya.github.io/lymms-binoculars-web/ (https://github.com/chillie-ilya/lymms-binoculars-web)
+	* KingCrabmaster for art
 	* and many others for help with testing
 *   All game assets (biome maps, Wang tiles, pixel scenes, sprites, images, icons, and translations) belong to Nolla Games.
 
