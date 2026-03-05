@@ -1,5 +1,6 @@
 import { isMatch, getDisplayName } from './translations.js';
 import { scanSpawnFunctions, getSpecialPoIs } from './poi_scanner.js';
+import { addStaticPixelScenes } from './static_spawns.js';
 import { TIME_UNTIL_LOADING } from './constants.js';
 import { app } from './app.js';
 import { CONTAINER_TYPES } from './utils.js';
@@ -128,6 +129,7 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 		// Keep the cancel button visible so highlights can be cleared later
         cancelBtn.style.display = 'block'; 
         cancelBtn.innerText = "Clear Results"; // Update text for clarity
+		document.getElementById('search-results').innerHTML = '';
 		if (autoNavigate) {
 			await navigateSearch(1); 
 		} else {
@@ -146,6 +148,7 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 		//cancelBtn.style.display = 'none';
 		app.setLoading(false);
 		searchActive = false;
+		app.draw();
 
 		// Just testing to see what the sprite distributions are like, no need to actually log this though
 		/*
@@ -194,15 +197,16 @@ function checkWandMatch(w, f) {
 	const length = w.tip.x - w.grip.x;
 	
 	// Stat filters
-	if (w.mana_max < f.minMana || w.mana_max > f.maxMana) return false;
-	if (w.deck_capacity < f.minCap || w.deck_capacity > f.maxCap) return false;
-	if ((w.reload_time / 60) < f.minRech || (w.reload_time / 60) > f.maxRech) return false;
-	if (w.actions_per_round < f.minSpells || w.actions_per_round > f.maxSpells) return false;
-	if ((w.fire_rate_wait / 60) < f.minDelay || (w.fire_rate_wait / 60) > f.maxDelay) return false;
-	if (w.mana_charge_speed < f.minManaRech || w.mana_charge_speed > f.maxManaRech) return false;
-	if (w.spread_degrees < f.minSpread || w.spread_degrees > f.maxSpread) return false;
-	if (w.speed_multiplier < f.minSpeed || w.speed_multiplier > f.maxSpeed) return false;
-	if (length < f.minLen || length > f.maxLen) return false;
+	// Note for some prebuilt wands we can't predict stats due to RNG based on frame count, so we'll just skip checks on those
+	if (typeof w.mana_max === 'number' && (w.mana_max < f.minMana || w.mana_max > f.maxMana)) return false;
+	if (typeof w.deck_capacity === 'number' && (w.deck_capacity < f.minCap || w.deck_capacity > f.maxCap)) return false;
+	if (typeof w.reload_time === 'number' && ((w.reload_time / 60) < f.minRech || (w.reload_time / 60) > f.maxRech)) return false;
+	if (typeof w.actions_per_round === 'number' && (w.actions_per_round < f.minSpells || w.actions_per_round > f.maxSpells)) return false;
+	if (typeof w.fire_rate_wait === 'number' && ((w.fire_rate_wait / 60) < f.minDelay || (w.fire_rate_wait / 60) > f.maxDelay)) return false;
+	if (typeof w.mana_charge_speed === 'number' && (w.mana_charge_speed < f.minManaRech || w.mana_charge_speed > f.maxManaRech)) return false;
+	if (typeof w.spread_degrees === 'number' && (w.spread_degrees < f.minSpread || w.spread_degrees > f.maxSpread)) return false;
+	if (typeof w.speed_multiplier === 'number' && (w.speed_multiplier < f.minSpeed || w.speed_multiplier > f.maxSpeed)) return false;
+	if (typeof length === 'number' && (length !== 0 && length < f.minLen || length > f.maxLen)) return false;
 	if (f.name && !isMatch(w.name, f.name)) return false;
 	if (f.sprite && w.sprite !== `wand_${f.sprite.toString().padStart(4, '0')}`) return false;
 
@@ -223,7 +227,9 @@ function checkWandMatch(w, f) {
 
 	// Spell set (Comma separated AND, order agnostic)
 	if (f.queryList.length > 0) {
-		if (!f.queryList.every(q => w.cards.some(s => isMatch(s, q)))) return false;
+		// Include always casts in search by combining them with the wand cards
+		const combinedCards = w.cards ? w.cards.concat(w.always_casts || []) : (w.always_casts || []);
+		if (!f.queryList.every(q => combinedCards.some(s => isMatch(s, q)))) return false;
 	}
 	return true;
 }
@@ -244,7 +250,7 @@ function checkItemMatch(item, f) {
     // 3. Potion/Pouch Label Synthesis
     // Concatenate material and item (e.g., "water" + " " + "potion") 
     // to allow queries like "water potion" to find matches.
-    const material = getDisplayName(item.material)+" " || item.material+" " || '';
+    const material = item.material ? (getDisplayName(item.material)+" " || item.material+" ") : '';
     const itemName = getDisplayName(item.item) || item.item;
     const combinedLabel = `${material}${itemName}`;
 
@@ -291,6 +297,8 @@ function checkMatch(poi, f) {
 	else if (CONTAINER_TYPES.includes(data.type)) {
 		// Why was this necessary? Empty string search with other filters seems fine
 		//if (f.queryList.length === 0) return false;
+		// Check container name?
+		if (isMatch(data.type, f.queryList.join(','))) return true; // Eh?
 		// Check if any item inside the chest matches the query
 		return data.items.some(item => checkItemMatch(item, f));
 	}
@@ -368,7 +376,9 @@ async function findNextPWMatches(isIterative = true) {
 		if (!app.poisByPW[`${targetPW},${targetPWVertical}`] || !app.pixelScenesByPW[`${targetPW},${targetPWVertical}`]) {
 			const scanResults = scanSpawnFunctions(app.biomeData, app.tileSpawns, seed, ngPlusCount, targetPW, targetPWVertical, app.skipCosmeticScenes, app.perks);
 			const specialPoIs = getSpecialPoIs(app.biomeData, seed, ngPlusCount, targetPW, targetPWVertical, app.perks);
-			app.pixelScenesByPW[`${targetPW},${targetPWVertical}`] = scanResults.finalPixelScenes;
+			const staticSpawnResults = addStaticPixelScenes(targetPW, targetPWVertical);
+			specialPoIs.push(...staticSpawnResults.pois);
+			app.pixelScenesByPW[`${targetPW},${targetPWVertical}`] = scanResults.finalPixelScenes.concat(staticSpawnResults.pixelScenes);
 			app.poisByPW[`${targetPW},${targetPWVertical}`] = scanResults.generatedSpawns.concat(specialPoIs);
 		}
 		for (let poi of app.poisByPW[`${targetPW},${targetPWVertical}`]) {

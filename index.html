@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <title>Lymm's Telescope</title>
     <style>
         body { background: #111; color: #eee; font-family: monospace; display: flex; height: 100vh; margin: 0; overflow: hidden; }
@@ -601,17 +602,6 @@
             </div>
         </div>
 
-        <div id="regions-container">
-            <span style="font-weight:bold; font-size:14px; margin-bottom:5px;">Region Options</span>
-            <div class="btn-group">
-                <button id="regions-all" class="btn-small" title="Generate tile data for all biomes, looks pretty but some of them are unnecessary for searching">All</button>
-                <button id="regions-useful" class="btn-small" title="Generate tile data only for regions which contain wands and items, default setting">Useful</button>
-                <button id="regions-none" class="btn-small" title="Deselect all regions, so you can select a single region for faster limited searches">None</button>
-            </div>
-            <div id="regions-list"></div>
-            <label class="region-opt"><input type="checkbox" id="skip-cosmetic-scenes" title="Do not generate or display pixel scenes which do not contain any spawn pixels with wands or items, saves a small amount of time but doesn't look as nice"> Skip Cosmetic Pixel Scenes</label>
-        </div>
-
         <div id="unlocks-container">
             <span style="font-weight:bold; font-size:14px; margin-bottom:5px;">Spell Unlocks</span>
             <div class="btn-group">
@@ -669,12 +659,31 @@
             </div>
         </div>
 
+        <div id="regions-container">
+            <span style="font-weight:bold; font-size:14px; margin-bottom:5px;">Region Options</span>
+            <div class="btn-group">
+                <button id="regions-all" class="btn-small" title="Generate tile data for all biomes, looks pretty but some of them are unnecessary for searching">All</button>
+                <button id="regions-useful" class="btn-small" title="Generate tile data only for regions which contain wands and items, default setting">Useful</button>
+                <button id="regions-none" class="btn-small" title="Deselect all regions, so you can select a single region for faster limited searches">None</button>
+            </div>
+            <div id="regions-list"></div>
+            <label class="region-opt"><input type="checkbox" id="skip-cosmetic-scenes" title="Do not generate or display pixel scenes which do not contain any spawn pixels with wands or items, saves a small amount of time but doesn't look as nice"> Skip Cosmetic Pixel Scenes</label>
+        </div>
+
         <span class="debug-toggle" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;" title="Show or hide options which you probably will not need to enable for normal use">Debug Options...</span>
         <div id="debug-options">
             <label class="debug-opt" title="There is a single *unique* pixel scene in the game, which is the Shrine pixel scene in the Collapsed Mines. Being unique, once you visit/load it, it permanently alters the spawn probability of other pixel scenes in the Collapsed Mines on your run. Only the Collapsed Mines version of this scene is unique, the Mines version is not. If the pixel scenes predicted for the Collapsed Mines are incorrect, it's probably because you need to toggle this setting."><input type="checkbox" id="visited-coalmine-alt-shrine"> Visited Collapsed Mine Shrine</label>
             <label class="debug-opt" title="Exclude Taikasauva Spawns from the map. Taikasauvas are a source of wands and spells, but they can be somewhat inconsistent because they have a tendency to randomly unload."><input type="checkbox" id="exclude-taikasauva"> Exclude Natural Taikasauva Spawns</label>
             <label class="debug-opt" title="Whether to recolor wang colors to material colors. Colors are still incorrect for some materials because they use textures which have different colors than their wang/material colors."><input type="checkbox" id="recolor-materials" checked> Recolor Materials</label>
             <label class="debug-opt" title="Remove spawn pixels after pre-scanning spawns from tiles and pixel scenes. Makes the world look quite a bit more empty, or more clean, depending on your point of view. Might be buggy with attempting to deselect this setting."><input type="checkbox" id="clear-spawn-pixels"> Clear Spawn Pixels</label>
+            <label class="debug-opt" title="Whether to enable static pixel scenes (holy mountains and such, with no items). WIP">
+                Enable Static Pixel Scenes
+                <select id="enable-static-pixel-scenes">
+                    <option value="off">Off</option>
+                    <option value="some" selected>Some</option>
+                    <option value="all">All (kind of slow)</option>
+                </select>
+            </label>
             <label class="debug-opt" title="Hide PoI circles to show the underlying tile map more clearly"><input type="checkbox" id="debug-hide-pois"> Hide PoIs</label>
             <label class="debug-opt" title="Show the colors from the original biome map as the background, instead of the recolored ones based on the average color of the backgrounds"><input type="checkbox" id="debug-original-biome-map"> Show Original Biome Map Colors</label>
             <label class="debug-opt" title="Edge noise is the wavy edge between chunks. Some spawns near the edges of biomes may be false positives or false negatives depending on whether or not they get culled by the edge noise, like for example if EDR protrudes into a biome and blocks a spawn. This feature hasn't been fully consistent with the game quite yet."><input type="checkbox" id="debug-enable-edge-noise"> Enable Edge Noise</label>

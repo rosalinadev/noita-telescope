@@ -220,6 +220,12 @@ export const WAND_TYPES = {
         cost: 200,
         level: 11,
         force_unshuffle: false,
+    },
+	'wand_unshuffle_10': {
+        type: 'normal',
+        cost: 180,
+        level: 11,
+        force_unshuffle: true,
     }
 };
 

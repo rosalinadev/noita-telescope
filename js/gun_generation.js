@@ -1,5 +1,5 @@
 import { NollaPrng } from "./nolla_prng.js";
-import { GUN_NAMES, GUN_PROBS, WAND_SHAPES } from "./wand_config.js";
+import { GUN_NAMES, GUN_PROBS, WAND_SHAPES, WAND_TYPES } from "./wand_config.js";
 import { GetRandomActionWithType } from "./spell_generator.js";
 import { clamp, shuffleTable, roundHalfOfEven } from "./utils.js";
 import { PROJECTILE, STATIC_PROJECTILE, MODIFIER, DRAW_MANY } from "./spells.js";
@@ -108,7 +108,10 @@ export function generateGun(worldSeed, ngPlusCount, wandType, cost, level, force
 
     if (wandType == 'better') {
         let name = GUN_NAMES[prng.Random(0, GUN_NAMES.length-1)];
-        gun['name'] = name;
+        gun['name'] = name + " Wand";
+    }
+    else {
+        gun['name'] = "Wand";
     }
 
     if (force_unshuffle || noMoreShuffle) gun['shuffle_deck_when_empty'] = 0;
@@ -516,12 +519,12 @@ function addRandomCards(worldSeed, ngPlusCount, gun, x, y, level, prng) {
 }
 
 
-// T10 unshuffle (tiny drop)
-export function generateGunStandalone(rngState) {
-    let wandType = 'normal';
-    let cost = 180;
-    let level = 11;
-    let force_unshuffle = true;
+export function generateGunStandalone(rngState, type) {
+    const typeData = WAND_TYPES[type];
+    let wandType = typeData['type'];
+    let cost = typeData['cost'];
+    let level = typeData['level'];
+    let force_unshuffle = typeData['force_unshuffle'];
     let gun = {};
     const prng = new NollaPrng(rngState);
     
@@ -632,7 +635,10 @@ export function generateGunStandalone(rngState) {
 
     if (wandType == 'better') {
         let name = GUN_NAMES[prng.Random(0, GUN_NAMES.length-1)];
-        gun['name'] = name;
+        gun['name'] = name + " Wand";
+    }
+    else {
+        gun['name'] = "Wand";
     }
 
     if (force_unshuffle) gun['shuffle_deck_when_empty'] = 0;
@@ -678,22 +684,27 @@ export function generateGunStandalone(rngState) {
 }
 
 
-/*
+
+// Current task: Summon taikasauva wand sprite distribution
+
 // Search all RNG states
 // Obviously this takes a long time
 // Start after timer
+/*
 console.log("Waiting a few seconds before starting search...");
 await new Promise(resolve => setTimeout(resolve, 3000));
 console.log("Starting search...");
+const wandType = 'wand_level_03';
 let sprites = {};
 for (let i = 1; i <= 1000; i++) {
     sprites[`wand_${i.toString().padStart(4, '0')}`] = 0;
 }
+// Math.pow(2, 31)
 for (let rngState = 0; rngState < Math.pow(2, 31); rngState++) {
     if (rngState % 100000 == 0) {
         console.log("Current RNG state: ", rngState);
     }
-    let gun = generateGunStandalone(rngState);
+    let gun = generateGunStandalone(rngState, wandType);
     const sprite = gun['sprite'];
     sprites[sprite] += 1;
 }

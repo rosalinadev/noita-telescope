@@ -15,6 +15,7 @@ import { BIOME_COLOR_LOOKUP, createTileOverlays, createTileOverlaysCheap, create
 import { COALMINE_ALT_SCENES } from './pixel_scene_config.js';
 import { debugBiomeEdgeNoise } from './edge_noise.js';
 import { loadPixelSceneData, reloadPixelSceneCache } from './pixel_scene_generation.js';
+import { addStaticPixelScenes } from './static_spawns.js';
 
 export const app = {
 	// TODO: A lot of these are old and unused and could probably be cleaned up
@@ -24,6 +25,7 @@ export const app = {
 	offscreenHeaven: null,
 	offscreenHell: null,
 	overlay: null, 
+	surfaceOverlay: null,
 	ctxo: null, 
 	// Background maps, recolored by biome
 	recolorOffscreen: null,
@@ -67,6 +69,7 @@ export const app = {
 		this.recolorOffscreen = document.createElement('canvas');
 		this.recolorOffscreenHeaven = document.createElement('canvas');
 		this.recolorOffscreenHell = document.createElement('canvas');
+		this.surfaceOverlay = document.createElement('canvas');
 		const vp = document.getElementById('view');
 
 		const resize = () => {
@@ -215,7 +218,9 @@ export const app = {
 			}
 			this.generate(false, true);
 		};
-
+		document.getElementById('enable-static-pixel-scenes').onchange = () => {
+			reloadPixelSceneCache().then(() => this.generate(true, true));
+		};
 		// Search
 
 		// Setup range value displays
@@ -253,6 +258,25 @@ export const app = {
 		setPWMaxVerticalButton.onclick = () => {
 			document.getElementById('search-vertical-pw').checked = true;
 			document.getElementById('search-pw-vertical-limit').value = 683;
+		};
+
+		document.getElementById('search-name').onkeydown = (e) => { 
+			if(e.key === "Enter") {
+				cancelSearch();
+				performSearch(true, true); 
+			}
+		};
+		document.getElementById('search-sprite').onkeydown = (e) => { 
+			if(e.key === "Enter") {
+				cancelSearch();
+				performSearch(true, true); 
+			}
+		};
+		document.getElementById('search-ac').onkeydown = (e) => { 
+			if(e.key === "Enter") {
+				cancelSearch();
+				performSearch(true, true); 
+			}
 		};
 
 
@@ -360,8 +384,8 @@ export const app = {
 
 		// Spells/Cast (1 - 26)
 		 this.initDualSlider('spells', 1, 26, 1);
-		// Cast Delay (0.0s - 1.0s)
-		this.initDualSlider('delay', 0.0, 1.0, 1/60);
+		// Cast Delay (-0.33s - 1.0s)
+		this.initDualSlider('delay', -20/60, 1.0, 1/60);
 		// Recharge Time (0.0s - 4.0s)
 		this.initDualSlider('rech', 0.0, 4.0, 1/60);
 		// Mana Max (0 - 3000)
@@ -837,6 +861,13 @@ export const app = {
 			this.pixelScenesByPW[`${this.pw},${this.pwVertical}`] = scanResults.finalPixelScenes;
 			const specialPoIs = getSpecialPoIs(this.biomeData, this.seed, this.ngPlusCount, this.pw, this.pwVertical, this.perks);
 			this.poisByPW[`${this.pw},${this.pwVertical}`] = scanResults.generatedSpawns.concat(specialPoIs);
+		
+			// Static pixel scenes (stupid)
+			if (document.getElementById('enable-static-pixel-scenes').value !== 'off') {
+				const staticPixelScenesResults = addStaticPixelScenes(this.seed, this.ngPlusCount, this.pw, this.pwVertical, this.biomeData, this.skipCosmeticScenes);
+				this.pixelScenesByPW[`${this.pw},${this.pwVertical}`] = this.pixelScenesByPW[`${this.pw},${this.pwVertical}`].concat(staticPixelScenesResults.pixelScenes);
+				this.poisByPW[`${this.pw},${this.pwVertical}`] = this.poisByPW[`${this.pw},${this.pwVertical}`].concat(staticPixelScenesResults.pois);
+			}
 		}
 
 		// Debug: Show example JSON output
@@ -984,6 +1015,23 @@ export const app = {
 			hellData.data[i*4+3] = 255;
 		}
 		ctxHell.putImageData(hellData, 0, 0);
+
+		// Disabled for now, waiting for a redraw
+		//this.getSurfaceOverlay();
+	},
+
+	getSurfaceOverlay() {
+		// Quick for testing
+		this.surfaceOverlay = document.createElement('canvas');
+		this.surfaceOverlay.width = this.w * 16;
+		this.surfaceOverlay.height = this.h * 16;
+        const ctx = this.surfaceOverlay.getContext('2d');
+		const img = new Image();
+		img.onload = () => {
+			ctx.drawImage(img, 0, 0);
+		}
+		img.src = './data/biome_maps/surface_overlay.png';
+        return this.surfaceOverlay;
 	},
 
 	draw() {
@@ -1019,6 +1067,11 @@ export const app = {
 			else {
 				this.ctx.drawImage(this.recolorOffscreenHeaven, 0, 0, this.w, this.h, 0, 0, this.w * 512, this.h * 512);
 			}
+		}
+
+		// Render debug surface overlay 
+		if (this.surfaceOverlay) { 
+			this.ctx.drawImage(this.surfaceOverlay, 0, 0, this.w * 512, this.h * 512);
 		}
 
 		const showBoxes = document.getElementById('debug-draw').checked;
@@ -1227,7 +1280,7 @@ export const app = {
 							break;
 						case 'item':
 							if (p.item) {
-								if (p.item.includes('heart')) {
+								if (p.item.includes('heart') || p.item === 'full_heal') {
 									poiColor = '#FF0000AA';
 								}
 								else if (p.item.includes('potion') || p.item.includes('pouch')) {

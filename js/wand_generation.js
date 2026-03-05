@@ -346,36 +346,50 @@ export function spawnSpecialWand(ws, ng, x, y, type) {
     if (type === 'ruusu') {
         wand['name'] = 'Ruusu';
         wand['sprite'] = 'custom/plant_01';
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 16, y: 0};
     }
     // Note that these wands can end up with 2 always casts.
     if (type === 'kiekurakeppi') {
         wand['name'] = 'Kiekurakeppi';
         wand['sprite'] = 'custom/wood_01';
         wand['always_casts'].push('KNOCKBACK');
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 14, y: 0};
     }
     if (type === 'valtikka') {
         wand['name'] = 'Valtikka';
         wand['sprite'] = 'custom/scepter_01';
         wand['always_casts'].push('PIERCING_SHOT');
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 16, y: 0};
     }
     if (type === 'vasta') {
         wand['name'] = wand['name'] + ' Vasta';
         wand['sprite'] = 'custom/vasta';
         wand['always_casts'].push('HITFX_CRITICAL_WATER');
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 18, y: 0};
     }
     if (type === 'vihta') {
         wand['name'] = wand['name'] + ' Vihta';
         wand['sprite'] = 'custom/vihta';
         wand['always_casts'].push('HITFX_EXPLOSION_ALCOHOL');
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 17, y: 0};
     }
     if (type === 'arpaluu') {
         wand['name'] = 'Arpaluu';
         wand['sprite'] = 'custom/skull_01';
         wand['always_casts'].push('EXPLOSION_REMOVE');
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 21, y: 0};
     }
     if (type === 'varpuluuta') {
         wand['name'] = wand['name'] + ' Varpuluuta';
         wand['sprite'] = 'custom/plant_02';
+        wand['grip'] = {x: 0, y: 0};
+        wand['tip'] = {x: 22, y: 0};
     }
     wand['x'] = wandX;
     wand['y'] = wandY;

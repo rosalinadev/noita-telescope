@@ -16,6 +16,7 @@ const ALIASES = {
 	'ALL_SPELLS': ['end of everything', 'eoe'],
 	'REGENERATION_FIELD': ['circle of vigour', 'circle of vigor', 'vigor', 'cov'],
 	'CASTER_CAST': ['inner spell', 'innerspell'],
+	'FUNKY_SPELL': ['???', 'funky spell', 'chaingun', 'bullet'],
 	// Item aliases
 	'great_chest': ['great treasure chest', 'great chest', 'gtc'],
 	'true_orb': ['34th orb', '34th', '34', 'orb 34'],
@@ -23,6 +24,7 @@ const ALIASES = {
 	'chest_leggy': ['leggy mimic', 'leggy', 'legs'],
 	'paha_silma': ['paha silmä', 'paha silma', 'silma', 'eye', 'evil eye'],
 	'refresh_mimic': ['refresh mimic', 'spell refresh mimic'],
+	'treasure': ['treasure', 'avarice', 'greed', 'greed diamond', 'avarice diamond'],
 	'kuu': ['kuu', 'moon', 'akuu'],
 	'greed_die': ['greed die', 'cursed die'],
 	'greed_orb': ['cruel orb', 'greed orb', 'cursed orb'],
@@ -152,7 +154,7 @@ export async function loadTranslations() {
 }
 
 export function getDisplayName(techId) {
-	if (!techId) return '???';
+	if (!techId) return null;
 	if (ALIASES[techId]) {
 		return ALIASES[techId][0]; // Return the first alias as the display name
 	}

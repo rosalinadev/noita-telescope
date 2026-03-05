@@ -442,6 +442,7 @@ export function createTileOverlaysExpanded(biomeData, recolorOffscreen, layers, 
     return overlays;
 }
 
+
 export function makeBlackTransparent(ctx) {
     const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
     const data = imgData.data;

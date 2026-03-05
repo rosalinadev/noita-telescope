@@ -114,8 +114,8 @@ function generateWandHtml(wand) {
 	const tipOffsetText = `${tipOffset != 0 ? ' | Offset ' + tipOffset : ''}`;
 	const spellsHtml = generateSpellListHtml(wand.cards, wand.deck_capacity);
 	
-	let wandName = (wand.name) ? wand.name.toUpperCase() + ' WAND' : 'WAND';
-	const wandType = (wand.original_force_unshuffle) ? 'non-shuffle' : `${wand.wand_type}`;
+	let wandName = (wand.name) ? wand.name.toUpperCase(): 'WAND';
+	const wandType = (wand.original_force_unshuffle) ? 'non-shuffle' : wand.wand_type || 'custom';
 	
 	if (wand.count && wand.count > 1) {
 		wandName = `${wandName} ×${wand.count}`;
@@ -124,22 +124,34 @@ function generateWandHtml(wand) {
 	//const pos = `(${Math.floor(wand.x)}, ${Math.floor(wand.y)})`;
 
 	let wandTier = wand.level ? 'tier ' + wand.level : '';
-	let extraInfo = `<small>${wandType} ${wandTier} ${wand.is_rare ? '(rare)' : ''} | Length ${length}${tipOffsetText} | Sprite ${wand.sprite.substring(5)} </small>`;
+	const spriteName = wand.sprite; // Just use raw name instead
+	let extraInfo = `<small>${wandType} ${wandTier} ${wand.is_rare ? '(rare)' : ''} | Length ${length}${tipOffsetText} | Sprite ${spriteName} </small>`;
 	if (document.getElementById('debug-rng-info').checked) {
 		extraInfo += `<br><small>RNG State: ${wand.r}, ${wand.r0}</small>`;
 	}
+	// Deal with the case when these are unknowable ranges rather than exact values. Current implementation just gives NaN, string values are like "100 - 200"
+	// Note that shuffle is typically 0 or 1, not true/false
+	const shuffle = typeof wand.shuffle_deck_when_empty === "number" ? (wand.shuffle_deck_when_empty ? 'Yes' : 'No') : wand.shuffle_deck_when_empty;
+	const spellsPerCast = typeof wand.actions_per_round === "number" ? Math.floor(wand.actions_per_round) : wand.actions_per_round;
+	const castDelay = typeof wand.fire_rate_wait === "number" ? (wand.fire_rate_wait/60).toFixed(2) : wand.fire_rate_wait;
+	const rechargeTime = typeof wand.reload_time === "number" ? (wand.reload_time/60).toFixed(2) : wand.reload_time;
+	const manaMax = typeof wand.mana_max === "number" ? Math.floor(wand.mana_max) : wand.mana_max;
+	const manaChargeSpeed = typeof wand.mana_charge_speed === "number" ? Math.floor(wand.mana_charge_speed) : wand.mana_charge_speed;
+	const capacity = typeof wand.deck_capacity === "number" ? Math.floor(wand.deck_capacity) : wand.deck_capacity;
+	const spread = typeof wand.spread_degrees === "number" ? wand.spread_degrees : wand.spread_degrees;
+	const speedMultiplier = typeof wand.speed_multiplier === "number" ? wand.speed_multiplier.toFixed(3) : wand.speed_multiplier;
 	return `
 	${generateHeaderHtml(wandName, 'wand_sprites/' + wand.sprite, extraInfo)}
 	<div style="font-size: 14px; line-height: 1.5; text-align: left;">
-		<b>Shuffle:</b> ${wand.shuffle_deck_when_empty ? 'Yes' : 'No'}<br>
-		<b>Spells/Cast:</b> ${Math.floor(wand.actions_per_round)}<br>
-		<b>Cast Delay:</b> ${(wand.fire_rate_wait/60).toFixed(2)}s<br>
-		<b>Recharge Time:</b> ${(wand.reload_time/60).toFixed(2)}s<br>
-		<b>Mana Max:</b> ${Math.floor(wand.mana_max)} <br>
-		<b>Mana Charge Speed:</b> ${Math.floor(wand.mana_charge_speed)}<br>
-		<b>Capacity:</b> ${Math.floor(wand.deck_capacity)}<br>
-		<b>Spread:</b> ${wand.spread_degrees}°<br>
-		<b>Speed Multiplier:</b> ${wand.speed_multiplier.toFixed(3)}<br>
+		<b>Shuffle:</b> ${shuffle}<br>
+		<b>Spells/Cast:</b> ${spellsPerCast}<br>
+		<b>Cast Delay:</b> ${castDelay}s<br>
+		<b>Recharge Time:</b> ${rechargeTime}s<br>
+		<b>Mana Max:</b> ${manaMax} <br>
+		<b>Mana Charge Speed:</b> ${manaChargeSpeed}<br>
+		<b>Capacity:</b> ${capacity}<br>
+		<b>Spread:</b> ${spread}°<br>
+		<b>Speed Multiplier:</b> ${speedMultiplier}<br>
 		${wand.always_casts && wand.always_casts.length > 0 ? `<b>Always Casts:</b> ${generateSpellListHtml(wand.always_casts, wand.always_casts.length)}` : ''}
 	</div>
 	${spellsHtml}
@@ -242,7 +254,10 @@ function generateSpellListHtml(spells, capacity) {
 	for (let i = 0; i < Math.floor(capacity); i++) {
 		const spellName = spells[i];
 		html += `<div class="slot">`;
-		if (spellName) {
+		if (spellName === '_UNIDENTIFIED') {
+			html += `<img class="spell-icon" src="./data/spell_sprites/_unidentified.png" title="Uses frame-based RNG so can't be determined ahead of time">`;
+		}
+		else if (spellName) {
 			const icon = spellName.toLowerCase() + ".png";
 			const translatedName = getDisplayName(spellName);
 			const title = translatedName ? `${translatedName} (${spellName})` : spellName;

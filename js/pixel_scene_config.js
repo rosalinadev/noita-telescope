@@ -135,7 +135,7 @@ export const EXCAVATIONSITE_SCENES = {
 	],
 	"g_gunpowderpool_04": [
 		{prob: 1.5, name: "gunpowderpool_04"},
-	],
+	]
 };
 
 export const SNOWCAVE_SCENES = {
@@ -195,7 +195,7 @@ export const SNOWCAVE_SCENES = {
 	],
 	"g_altar": [
 		{prob: 1.0, name: "trailer_altar"},
-	],
+	]
 };
 
 export const SNOWCASTLE_SCENES = {
@@ -242,6 +242,7 @@ export const SNOWCASTLE_SCENES = {
 		{name: "chamfer_inner_bottom_l"},
 		{name: "pillar_filler_01"},
 		{name: "pillar_filler_tall_01"},
+		{name: "forge"}
 	]
 };
 
@@ -531,7 +532,21 @@ export const THE_END_SCENES = {
 	"g_pixel_scene_01": [
 		{prob: 1.0, name: "cathedral"},
 		{prob: 1.0, name: "mining"},
-	],
+	]
+};
+
+export const PYRAMID_SCENES = {
+	"extras": [
+		{name: "boss_limbs"},
+		{name: "entrance"},
+		{name: "hallway"},
+		{name: "left"},
+		{name: "left_bottom"},
+		//{name: "reward"}, // Unused
+		{name: "right"},
+		{name: "right_bottom"},
+		{name: "top"},
+	]
 };
 
 export const THE_SKY_SCENES = {
@@ -547,9 +562,92 @@ export const GENERAL_SCENES = {
 		{name: "wand_altar_vault"},
 		{name: "potion_altar"},
 		{name: "potion_altar_vault"},
+		{name: "the_end_shop"}, // Moving this to general to avoid alias issue
+		{name: "tower_start"},
+		{name: "greed_treasure"},
+		{name: "fishing_hut"},
+		{name: "bunker"},
+		{name: "bunker2"},
+		{name: "rainbow_cloud"},
+		{name: "eyespot"},
+		{name: "huussi"},
+		{name: "dragoncave"},
+		{name: "funroom"},
+		{name: "meatroom"},
+		{name: "null_room"},
+		{name: "roboroom"},
+		{name: "robot_egg"},
+		{name: "wizardcave_entrance"},
+		{name: "teleportroom"}, // Renamed because of another non-general one with the smae name
+		{name: "ocarina"},
+		{name: "orbroom"},
+		{name: "secret_lab"},
+		{name: "essenceroom"},
+		{name: "alchemist_secret"},
+		{name: "alchemist_secret_music"},
+		{name: "boss_victoryroom"},
+		{name: "cavern"},
+		{name: "friendroom"},
+		{name: "watercave_layout_1"},
+		{name: "watercave_layout_2"},
+		{name: "watercave_layout_3"},
+		{name: "watercave_layout_4"},
+		{name: "watercave_layout_5"},
+		{name: "solid_wall_hidden_cavern"},
+		{name: "mystery_teleport"},
+		{name: "roadblock"},
+		{name: "boss_arena_top"},
+		{name: "lavalake_racing"},
+		{name: "lavalake_pit"},
+		{name: "lavalake_pit_cracked"},
+		{name: "cauldron"},
 	]
 }
 
+export const OVERWORLD_SCENES = {
+	"extras": [
+		{name: "essence_altar"},
+		{name: "essence_altar_desert"},
+		{name: "snowy_ruins_eye_pillar"},
+		{name: "cliff"},
+		{name: "desert_ruins_base_01"},
+		{name: "music_machine_stand"},
+		{name: "scale"},
+		{name: "scale_old"},
+	]
+}
+
+export const TEMPLE_SCENES = {
+	"extras": [
+		{name: "altar"},
+		{name: "altar_left"},
+		{name: "altar_right"},
+		{name: "altar_right_snowcastle"},
+		{name: "altar_snowcastle_capsule"},
+		{name: "altar_vault_capsule"},
+		{name: "altar_snowcave_capsule"},
+		{name: "altar_top"},
+		{name: "altar_top_blood"},
+		{name: "altar_top_lava"},
+		{name: "altar_top_oil"},
+		{name: "altar_top_radioactive"},
+		{name: "altar_top_water"},
+		{name: "altar_top_ending"},
+	]
+};
+
+export const MOUNTAIN_SCENES = {
+	"extras": [
+		{name: "floating_island"},
+		{name: "top"},
+		{name: "left_entrance"},
+		{name: "hall"},
+		{name: "right"},
+		{name: "right_stub"}
+	]
+};
+
+export const TEMPLE_ALTAR_SCENES = {};
 export const FUNGICAVE_SCENES = {};
 export const FUNGIFOREST_SCENES = {};
 export const WANDCAVE_SCENES = {};
@@ -557,13 +655,49 @@ export const WIZARDCAVE_SCENES = {};
 export const ROBOBASE_SCENES = {};
 export const SNOWCHASM_SCENES = {};
 export const CLOUDS_SCENES = {};
-export const TEMPLE_ALTAR_SCENES = {};
-export const SNOWCASTLE_CAVERN_SCENES = {};
+export const EXCAVATIONSITE_CUBE_CHAMBER_SCENES = {
+	"extras": [
+		{name: "cube_chamber"},
+	]
+};
+export const SNOWCAVE_SECRET_CHAMBER_SCENES = {
+	"extras": [
+		{name: "secret_chamber"},
+	]
+};
+export const SNOWCASTLE_CAVERN_SCENES = {
+	"extras": [
+		{name: "side_cavern_left"},
+		{name: "side_cavern_right"},
+	]
+};
+export const SNOWCASTLE_HOURGLASS_CHAMBER_SCENES = {
+	"extras": [
+		{name: "hourglass_chamber"},
+	]
+};
 export const BIOME_WATCHTOWER_SCENES = {};
 export const BIOME_BARREN_SCENES = {};
 export const BIOME_POTION_MIMICS_SCENES = {};
 export const BIOME_DARKNESS_SCENES = {};
 export const BIOME_BOSS_SKY_SCENES = {};
+
+export const SPLICED_SCENES = {
+	"extras": [
+		{name: "boss_arena"},
+		{name: "gourd_room"},
+		{name: "lake_statue"},
+		{name: "lavalake_pit_bottom"},
+		{name: "lavalake2"},
+		{name: "moon"},
+		{name: "moon_dark"},
+		{name: "mountain_lake"},
+		{name: "skull"},
+		{name: "skull_in_desert"},
+		{name: "tree"},
+		{name: "watercave"}
+	]
+}
 
 export const PIXEL_SCENE_BIOME_MAP = {
 	"coalmine": COALMINE_SCENES,
@@ -598,11 +732,19 @@ export const PIXEL_SCENE_BIOME_MAP = {
 	"tower_vault": TOWER_SCENES,
 	"tower_crypt": TOWER_SCENES,
 	"tower_the_end": TOWER_SCENES,
+	"excavationsite_cube_chamber": EXCAVATIONSITE_CUBE_CHAMBER_SCENES,
+	"snowcave_secret_chamber": SNOWCAVE_SECRET_CHAMBER_SCENES,
 	"snowcastle_cavern": SNOWCASTLE_CAVERN_SCENES,
+	"snowcastle_hourglass_chamber": SNOWCASTLE_HOURGLASS_CHAMBER_SCENES,
+	"pyramid": PYRAMID_SCENES,
 	"biome_watchtower": BIOME_WATCHTOWER_SCENES,
 	"biome_barren": BIOME_BARREN_SCENES,
 	"biome_potion_mimics": BIOME_POTION_MIMICS_SCENES,
 	"biome_darkness": BIOME_DARKNESS_SCENES,
 	"biome_boss_sky": BIOME_BOSS_SKY_SCENES,
+	"overworld": OVERWORLD_SCENES,
+	"temple": TEMPLE_SCENES,
+	"mountain": MOUNTAIN_SCENES,
 	"general": GENERAL_SCENES,
+	"spliced": SPLICED_SCENES,
 };

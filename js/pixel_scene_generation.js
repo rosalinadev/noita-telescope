@@ -1,10 +1,12 @@
 import { NollaPrng } from './nolla_prng.js';
-import { BLOCKED_COLORS, PIXEL_SCENE_BIOME_MAP } from './pixel_scene_config.js';
+import { BLOCKED_COLORS, GENERAL_SCENES, PIXEL_SCENE_BIOME_MAP } from './pixel_scene_config.js';
 import { MATERIAL_COLOR_CONVERSION, MATERIAL_WANG_COLORS } from './potion_config.js';
-import { getBiomeAtWorldCoordinates } from './utils.js';
+import { getBiomeAtWorldCoordinates, getWorldCenter, getWorldSize } from './utils.js';
 import { sanitizePng } from './png_sanitizer.js';
 import { prescanPixelScene } from './poi_scanner.js';
 import { BIOME_BACKGROUND_COLORS, TILE_OVERLAY_COLORS, makeBlackTransparent } from './image_processing.js';
+import { GENERATOR_CONFIG } from './generator_config.js';
+import { app } from './app.js'; // Hacky but I don't feel like figuring out how to pass this data right now
 
 // This was originally constant but it sometimes needs to be cleared to regenerate the cache...
 export let PIXEL_SCENE_DATA = {};
@@ -17,10 +19,16 @@ export async function reloadPixelSceneCache() {
 function getBiomeAlias(biomeName) {
 	// Aliases to avoid needing to duplicate files for repeated biomes
 	if (biomeName === "coalmine_alt") return "coalmine";
-	if (biomeName === "sandcave") return "snowcastle";
+	if (biomeName === "excavationsite_cube_chamber") return "excavationsite";
+	if (biomeName === "snowcave_secret_chamber") return "snowcave";
+	if (biomeName === "sandcave" || biomeName === "snowcastle_cavern" || biomeName === "snowcastle_hourglass_chamber") return "snowcastle";
 	if (biomeName === "rainforest_open" || biomeName === "rainforest_dark") return "rainforest";
 	if (biomeName === "vault_frozen") return "vault";
 	if (biomeName === "the_end" || biomeName === "the_sky") return "crypt";
+	if (biomeName === "scale") return "overworld";
+	if (biomeName.includes("temple")) return "temple";
+	if (biomeName.includes("pyramid")) return "pyramid";
+	if (biomeName.includes("mountain")) return "mountain";
 	return biomeName;
 }
 
@@ -31,11 +39,15 @@ function getPixelSceneVariant(pixelSceneKey, variantKey) {
 	return null;
 }
 
-const GENERAL_SCENES = ["wand_altar", "wand_altar_vault", "potion_altar", "potion_altar_vault"]; // These scenes are used in multiple biomes, so we can check for them first before doing the biome-specific lookup
+//const GENERAL_SCENES = ["wand_altar", "wand_altar_vault", "potion_altar", "potion_altar_vault"]; // These scenes are used in multiple biomes, so we can check for them first before doing the biome-specific lookup
+const GENERAL_SCENE_NAMES = GENERAL_SCENES["extras"].map(scene => scene.name);
 
 // Don't use the alias here because spawn points can have different indices per "duplicate" biome, so we need to keep them separate in the data
 function getPixelSceneKey(biomeName, sceneName) {
-	if (GENERAL_SCENES.includes(sceneName)) return "general/" + sceneName;
+	if (biomeName.includes("temple")) return "temple/" + sceneName;
+	if (biomeName.includes("pyramid")) return "pyramid/" + sceneName;
+	if (biomeName.includes("mountain")) return "mountain/" + sceneName;
+	if (!biomeName || GENERAL_SCENE_NAMES.includes(sceneName) || !GENERATOR_CONFIG[biomeName]) return "general/" + sceneName;
 	return biomeName + "/" + sceneName;
 }
 
@@ -154,7 +166,7 @@ const PIXEL_SCENE_BOUNDS_OFFSET = {
 	"trailer_altar": {x: -67, y: 0},
 }
 
-export function loadPixelScene(biomeData, biomeName, sceneName, ws, ng, x, y, skipCosmeticScenes = true) {
+export function loadPixelScene(biomeData, biomeName, sceneName, ws, ng, x, y, skipCosmeticScenes = true, checkBounds = true) {
 	const pixelSceneKey = getPixelSceneKey(biomeName, sceneName);
 	if (!PIXEL_SCENE_DATA[pixelSceneKey]) {
 		console.warn(`Pixel scene data not found for key ${pixelSceneKey}. This should not happen because we preload all pixel scene images.`);
@@ -167,7 +179,7 @@ export function loadPixelScene(biomeData, biomeName, sceneName, ws, ng, x, y, sk
 	}
 	// Check whether it is actually in the right biome completely
 	// Need to check all corners I think, otherwise we get edge cases that break
-	if (CHECK_PIXEL_SCENE_CORNERS && !PIXEL_SCENES_WITHOUT_BOUNDS_CHECK.includes(sceneName)) {
+	if (checkBounds && biomeName && CHECK_PIXEL_SCENE_CORNERS && !PIXEL_SCENES_WITHOUT_BOUNDS_CHECK.includes(sceneName)) {
 		const boundsOffset = PIXEL_SCENE_BOUNDS_OFFSET[sceneName] || {x: 0, y: 0};
 		const topCornerCoords = {x: x + boundsOffset.x, y: y + boundsOffset.y};
 		const targetTopLeft = getBiomeAtWorldCoordinates(biomeData, topCornerCoords.x, topCornerCoords.y, ng > 0);
@@ -195,10 +207,13 @@ export function loadPixelScene(biomeData, biomeName, sceneName, ws, ng, x, y, sk
 		}
 	}
 	// Recolor the pixel scene for the biome if needed
-	const variantKey = `biome=${biomeName}`;
-	if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey]) {
-		PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, ''), biomeName);
-		//console.log(`Created biome variant of pixel scene ${pixelSceneKey} with key ${variantKey}`);
+	let variantKey = '';
+	if (biomeName) {
+		variantKey = `biome=${biomeName}`;
+		if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey]) {
+			PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, ''), biomeName, x, y);
+			//console.log(`Created biome variant of pixel scene ${pixelSceneKey} with key ${variantKey}`);
+		}
 	}
 	const pixelSceneImage = PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey];
 	return {
@@ -328,7 +343,7 @@ export function loadRandomPixelScene(biomeData, biomeName, scene_list, ws, ng, x
 			// Recolor the pixel scene for the biome if needed
 			const finalVariantKey = variantKey + (variantKey !== '' ? '&' : '') + `biome=${biomeName}`;
 			if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey]) {
-				PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, variantKey), biomeName);
+				PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, variantKey), biomeName, x, y);
 				//console.log(`Created biome variant of pixel scene ${pixelSceneKey} with key ${finalVariantKey}`);
 			}
 			outputScene.variantKey = finalVariantKey;
@@ -343,7 +358,7 @@ export function loadRandomPixelScene(biomeData, biomeName, scene_list, ws, ng, x
 	return null;
 }
 
-function recolorPixelSceneForBiome(sourceCanvas, targetBiome) {
+function recolorPixelSceneForBiome(sourceCanvas, targetBiome, x, y) {
     const recolorMaterials = document.getElementById('recolor-materials').checked;
     const width = sourceCanvas.width;
     const height = sourceCanvas.height;
@@ -361,9 +376,24 @@ function recolorPixelSceneForBiome(sourceCanvas, targetBiome) {
 
     // Prepare color values for 32-bit ABGR format (Little-Endian)
     const pack = (hex) => (0xFF << 24) | ((hex & 0xFF) << 16) | (hex & 0xFF00) | ((hex >> 16) & 0xFF);
+
+	let targetColor = pack(TILE_OVERLAY_COLORS[targetBiome] || 0xff00ff);
+	let bgColor = pack(BIOME_BACKGROUND_COLORS[targetBiome] || 0x000000);
+	if (targetColor === pack(0xff00ff)) {
+		//targetColor = pack(BIOME_BACKGROUND_COLORS[targetBiome] || 0xff00ff);
+		//bgColor = 0x000000; // Default to black if biome color is missing
+		// As a fallback, use the color of the biome map?
+		// TODO: Currently using app references here when I probably shouldn't
+		const chunkX = (Math.floor((getWorldCenter(app.ngPlusCount > 0) * 512 + x + width / 2) / 512) % getWorldSize(app.ngPlusCount > 0) + getWorldSize(app.ngPlusCount > 0)) % getWorldSize(app.ngPlusCount > 0);
+		let chunkY = Math.floor((14*512 + y + height / 2) / 512);
+		if (chunkY < 0) chunkY = 0;
+		if (chunkY > 47) chunkY = 47;
+		const backgroundColor = app.recolorOffscreen.getContext('2d').getImageData(chunkX, chunkY, 1, 1).data;
+		// Some attempt to make the background color not exactly the same as the terrain color... Need to just get a better background and foreground.
+		targetColor = pack(((backgroundColor[0]*0.75) << 16) | ((backgroundColor[1]*0.75) << 8) | (backgroundColor[2]*0.75));
+		bgColor = 0xFF000000;
+	}
     
-    const targetColor = pack(TILE_OVERLAY_COLORS[targetBiome] || 0xff00ff);
-    const bgColor = pack(BIOME_BACKGROUND_COLORS[targetBiome] || 0x000000);
     const airDetect = 0xFF420000; // ABGR for 0x000042 (Air)
 
     for (let i = 0; i < data32.length; i++) {
