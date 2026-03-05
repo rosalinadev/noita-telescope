@@ -1460,6 +1460,6 @@ export const app = {
 	}
 };
 
-const USE_DAILY_RUN_SEED = false; // Avoid spamming while debugging lol
+const USE_DAILY_RUN_SEED = true; // Avoid spamming while debugging lol
 
 app.init();
