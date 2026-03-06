@@ -40,7 +40,7 @@ export function cancelSearch() {
 
 function getSearchFilters() {
 	return {
-		queryList: document.getElementById('search-input').value.split(',').map(s => s.trim().toLowerCase()).filter(s => s),
+		queryList: document.getElementById('search-input').value.split(',').map(s => s.trim().toLowerCase().replace('_', ' ')).filter(s => s),
 		name: document.getElementById('search-name').value.toLowerCase(),
 		sprite: document.getElementById('search-sprite').value,
 		ac: document.getElementById('search-ac').value.toLowerCase(),
@@ -150,13 +150,13 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 		searchActive = false;
 		app.draw();
 
-		// Just testing to see what the sprite distributions are like, no need to actually log this though
+		// Just testing to see what the sprite distributions are like, thinking of using it in some kind of summary maybe
 		/*
 		if (searchAllPW && search.lastPwIdx === search.pwSequence.length - 1) {
 			// Get statistics on all scanned PoIs
 			let totalWands = 0;
 			let spriteCounts = {};
-			for (let i = 1; i <= 1000; i++) {
+			for (let i = 0; i <= 1000; i++) {
 				spriteCounts[`wand_${i.toString().padStart(4, '0')}`] = 0;
 			}
 			for (let pwKey in app.poisByPW) {
@@ -198,15 +198,17 @@ function checkWandMatch(w, f) {
 	
 	// Stat filters
 	// Note for some prebuilt wands we can't predict stats due to RNG based on frame count, so we'll just skip checks on those
-	if (typeof w.mana_max === 'number' && (w.mana_max < f.minMana || w.mana_max > f.maxMana)) return false;
-	if (typeof w.deck_capacity === 'number' && (w.deck_capacity < f.minCap || w.deck_capacity > f.maxCap)) return false;
-	if (typeof w.reload_time === 'number' && ((w.reload_time / 60) < f.minRech || (w.reload_time / 60) > f.maxRech)) return false;
-	if (typeof w.actions_per_round === 'number' && (w.actions_per_round < f.minSpells || w.actions_per_round > f.maxSpells)) return false;
-	if (typeof w.fire_rate_wait === 'number' && ((w.fire_rate_wait / 60) < f.minDelay || (w.fire_rate_wait / 60) > f.maxDelay)) return false;
-	if (typeof w.mana_charge_speed === 'number' && (w.mana_charge_speed < f.minManaRech || w.mana_charge_speed > f.maxManaRech)) return false;
-	if (typeof w.spread_degrees === 'number' && (w.spread_degrees < f.minSpread || w.spread_degrees > f.maxSpread)) return false;
-	if (typeof w.speed_multiplier === 'number' && (w.speed_multiplier < f.minSpeed || w.speed_multiplier > f.maxSpeed)) return false;
-	if (typeof length === 'number' && (length !== 0 && length < f.minLen || length > f.maxLen)) return false;
+	// Ignore nondeterministic wands. Luckily they all have mana max as a varying stat so this is a simple check
+	if (typeof w.mana_max !== 'number') return false;
+	if (w.mana_max < f.minMana || w.mana_max > f.maxMana) return false;
+	if (w.deck_capacity < f.minCap || w.deck_capacity > f.maxCap) return false;
+	if ((w.reload_time / 60) < f.minRech || (w.reload_time / 60) > f.maxRech) return false;
+	if (w.actions_per_round < f.minSpells || w.actions_per_round > f.maxSpells) return false;
+	if ((w.fire_rate_wait / 60) < f.minDelay || (w.fire_rate_wait / 60) > f.maxDelay) return false;
+	if (w.mana_charge_speed < f.minManaRech || w.mana_charge_speed > f.maxManaRech) return false;
+	if (w.spread_degrees < f.minSpread || w.spread_degrees > f.maxSpread) return false;
+	if (w.speed_multiplier < f.minSpeed || w.speed_multiplier > f.maxSpeed) return false;
+	if (length < f.minLen || length > f.maxLen) return false; // Length 0 was previously used for ones where I just hadn't filled it out, but now it should always be available
 	if (f.name && !isMatch(w.name, f.name)) return false;
 	if (f.sprite && w.sprite !== `wand_${f.sprite.toString().padStart(4, '0')}`) return false;
 
