@@ -1,5 +1,5 @@
 import { generateBiomeData, BIOME_CONFIG } from './biome_generator.js';
-import { sanitizePng } from './png_sanitizer.js';
+import { loadPNG, loadPNGBitmap} from './png_sanitizer.js';
 import { getDisplayName, loadTranslations } from './translations.js';
 import { UNLOCKABLES, setUnlocks } from './unlocks.js';
 import { toggleTooltipPinned, updateTooltip } from './tooltip_generator.js';
@@ -14,16 +14,22 @@ import { findEyeMessages, renderEyeMessages } from './eye_messages.js';
 import { BIOME_COLOR_LOOKUP, createTileOverlays, createTileOverlaysCheap, createTileOverlaysExpanded } from './image_processing.js';
 import { COALMINE_ALT_SCENES } from './pixel_scene_config.js';
 import { debugBiomeEdgeNoise } from './edge_noise.js';
-import { loadPixelSceneData, reloadPixelSceneCache } from './pixel_scene_generation.js';
+import { getPixelSceneCanvas, loadPixelSceneData, reloadPixelSceneCache } from './pixel_scene_generation.js';
 import { addStaticPixelScenes } from './static_spawns.js';
 
 export const app = {
 	// TODO: A lot of these are old and unused and could probably be cleaned up
 	canvas: null, 
 	ctx: null, 
+
+	baseBiomeMapNG0: null,
+	baseBiomeMapNGP: null,
+
+	// Biome map renders for background (can use biomeData.pixels for the color data)
 	offscreen: null, 
 	offscreenHeaven: null,
 	offscreenHell: null,
+
 	overlay: null, 
 	surfaceOverlay: null,
 	ctxo: null, 
@@ -31,12 +37,17 @@ export const app = {
 	recolorOffscreen: null,
 	recolorOffscreenHeaven: null, 
 	recolorOffscreenHell: null,
+
+	// Buffer versions since we can't use getImageData
+	recolorOffscreenBuffer: null,
+	recolorOffscreenHeavenBuffer: null,
+	recolorOffscreenHellBuffer: null,
+
 	w: 0, h: 0, 
 	biomeData: null,
 	tileLayers: [],
 	cam: { x: CHUNK_SIZE*35, y: CHUNK_SIZE*24, z: 0.053 },
 	drag: { on: false, lx: 0, ly: 0 },
-	assets: { ng0: null, ngp: null },
 	pinnedTooltip: null,
 	pw: 0,
 	pwVertical: 0,
@@ -650,15 +661,6 @@ export const app = {
 					if (tempRadius < POI_RADIUS) tempRadius = POI_RADIUS;
 				}
 				return Math.sqrt((px - wx) ** 2 + (py - wy) ** 2) < tempRadius;
-				/*
-				if (p.data) {
-					// Coordinates already account for PW shift
-					const px = p.data.x + getWorldCenter(this.isNGP) * 512 - (this.pw * 512 * getWorldSize(this.isNGP));
-					const py = p.data.y + 14 * 512 - (this.pwVertical * 24576);
-					return Math.sqrt((px - wx) ** 2 + (py - wy) ** 2) < POI_RADIUS;
-				}
-				return false;
-				*/
 			});
 			if (poiHit) return poiHit;
 		}
@@ -709,23 +711,12 @@ export const app = {
 	async preload() {
 		this.setLoading(true, "Loading Assets...");
 		await loadTranslations();
-		const load = async (src) => {
-			const img = new Image(); img.src = src;
-			await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
-			const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-			const ctx = c.getContext('2d'); ctx.drawImage(img,0,0);
-			const d = ctx.getImageData(0,0,img.width,img.height).data;
-			const u32 = new Uint32Array(img.width * img.height);
-			for(let i=0; i<u32.length; i++) u32[i] = 0xFF000000 | (d[i*4]<<16) | (d[i*4+1]<<8) | d[i*4+2];
-			return u32;
-		};
 		try {
-			this.assets.ng0 = await load('./data/biome_maps/biome_map.png');
-			this.assets.ngp = await load('./data/biome_maps/biome_map_newgame_plus.png');
+			this.baseBiomeMapNG0 = await loadPNG('./data/biome_maps/biome_map.png');
+			this.baseBiomeMapNGP = await loadPNG('./data/biome_maps/biome_map_newgame_plus.png');
 		} catch(e) { console.error("Base assets failed to load."); console.error(e); }
 		console.log("Loading pixel scene data...");
 		// Preload pixel scenes
-		// TODO: Since this is a lot of files, it's slow on github pages. Need to move this into a zip file or something to load it as one request
 		await loadPixelSceneData();
 		console.log("Finished loading pixel scene data.");
 
@@ -733,16 +724,6 @@ export const app = {
 			this.surfaceOverlay = await this.getSurfaceOverlay();
 		}
 		this.setLoading(false);
-	},
-
-	async loadWangAsset(url) {
-		const cleanBlob = await sanitizePng(url);
-		const img = await createImageBitmap(cleanBlob);
-		const canvas = new OffscreenCanvas(img.width, img.height);
-		const ctx = canvas.getContext('2d');
-		ctx.drawImage(img, 0, 0);
-		const imageData = ctx.getImageData(0, 0, img.width, img.height);
-		return { data: imageData.data, width: imageData.width, height: imageData.height };
 	},
 
 	// Could probably default rescan to true if tiles is true
@@ -818,7 +799,7 @@ export const app = {
 		// 1. FULL GENERATION (Only if seed/NG changed)
 		if (tiles) {
 			//const noMoreShuffle = this.perks['noMoreShuffle'] || false;
-			const base = (this.isNGP ? this.assets.ngp : this.assets.ng0);
+			const base = (this.isNGP ? this.baseBiomeMapNGP.data : this.baseBiomeMapNG0.data);
 			if (!base) {
 				this.setLoading(false);
 				return;
@@ -833,7 +814,7 @@ export const app = {
 
 			for (let k in GENERATOR_CONFIG) {
 				if (GENERATOR_CONFIG[k].enabled && !GENERATOR_CONFIG[k].wangData && GENERATOR_CONFIG[k].wangFile) {
-					GENERATOR_CONFIG[k].wangData = await this.loadWangAsset(GENERATOR_CONFIG[k].wangFile);
+					GENERATOR_CONFIG[k].wangData = await loadPNG(GENERATOR_CONFIG[k].wangFile);
 				}
 			}
 
@@ -936,6 +917,11 @@ export const app = {
 	},
 
 	renderRecolorMap() {
+		// Since we can't use getImageData, we can recreate a buffer as well...
+		this.recolorOffscreenBuffer = new Uint8Array(this.w * this.h * 3); // RGB only, no alpha needed since it's always 255
+		this.recolorOffscreenHeavenBuffer = new Uint8Array(this.w * this.h * 3);
+		this.recolorOffscreenHellBuffer = new Uint8Array(this.w * this.h * 3);
+
 		this.recolorOffscreen.width = this.w;
 		this.recolorOffscreen.height = this.h;
 		const ctx = this.recolorOffscreen.getContext('2d');
@@ -964,7 +950,6 @@ export const app = {
 					else {
 						// Sky
 						// Apply gradient from sky blue to white based on depth, capped at surface level
-						// TODO: Make this less confusing, though it does work
 						let depthFactor = Math.min(Math.floor(i / this.w) / surfaceLevel, 1);
 						// Linear interpolation between sky blue (0x87ceeb) and something more desaturated (0xbbddeb)
 						let r = 0x87 + ((0xbb - 0x87) * depthFactor);
@@ -986,6 +971,9 @@ export const app = {
 			id.data[i*4+1] = (color >> 8) & 0xFF;
 			id.data[i*4+2] = color & 0xFF;
 			id.data[i*4+3] = 255;
+			this.recolorOffscreenBuffer[i*3+0] = (color >> 16) & 0xFF;
+			this.recolorOffscreenBuffer[i*3+1] = (color >> 8) & 0xFF;
+			this.recolorOffscreenBuffer[i*3+2] = color & 0xFF;
 		}
 		ctx.putImageData(id, 0, 0);
 
@@ -995,22 +983,15 @@ export const app = {
 		this.recolorOffscreenHeaven.height = this.h;
 		const ctxHeaven = this.recolorOffscreenHeaven.getContext('2d');
 		const heavenData = ctxHeaven.createImageData(this.w, this.h);
-		/*
-		for (let i = 0; i < this.biomeData.heavenPixels.length; i++) {
-			const color = this.biomeData.heavenPixels[i] & 0xFFFFFF;
-			const recolor = BIOME_COLOR_LOOKUP[color] || color;
-			heavenData.data[i*4+0] = (recolor >> 16) & 0xFF;
-			heavenData.data[i*4+1] = (recolor >> 8) & 0xFF;
-			heavenData.data[i*4+2] = recolor & 0xFF;
-			heavenData.data[i*4+3] = 255;
-		}
-		*/
-		// Actually, just use the top row pixels of the main recolor map for heaven
+		// Just use the top row pixels of the main recolor map for heaven
 		for (let i = 0; i < this.biomeData.heavenPixels.length; i++) {
 			heavenData.data[i*4+0] = id.data[(i*4+0)%(this.w*4)];
 			heavenData.data[i*4+1] = id.data[(i*4+1)%(this.w*4)];
 			heavenData.data[i*4+2] = id.data[(i*4+2)%(this.w*4)];
 			heavenData.data[i*4+3] = 255;
+			this.recolorOffscreenHeavenBuffer[i*3+0] = id.data[(i*4+0)%(this.w*4)];
+			this.recolorOffscreenHeavenBuffer[i*3+1] = id.data[(i*4+1)%(this.w*4)];
+			this.recolorOffscreenHeavenBuffer[i*3+2] = id.data[(i*4+2)%(this.w*4)];
 		}
 		ctxHeaven.putImageData(heavenData, 0, 0);
 		
@@ -1025,6 +1006,9 @@ export const app = {
 			hellData.data[i*4+1] = (recolor >> 8) & 0xFF;
 			hellData.data[i*4+2] = recolor & 0xFF;
 			hellData.data[i*4+3] = 255;
+			this.recolorOffscreenHellBuffer[i*3+0] = (recolor >> 16) & 0xFF;
+			this.recolorOffscreenHellBuffer[i*3+1] = (recolor >> 8) & 0xFF;
+			this.recolorOffscreenHellBuffer[i*3+2] = recolor & 0xFF;
 		}
 		ctxHell.putImageData(hellData, 0, 0);
 
@@ -1033,12 +1017,10 @@ export const app = {
 	},
 
 	async getSurfaceOverlay() {
+		// TODO: Add variants for PWs/NG+
 		const url = './data/biome_maps/surface_overlay.png';
-		const cleanBlob = await sanitizePng(url);
-		const img = await createImageBitmap(cleanBlob);
-		this.surfaceOverlay = new OffscreenCanvas(img.width, img.height);
-		const ctx = this.surfaceOverlay.getContext('2d');
-		ctx.drawImage(img, 0, 0);
+		// Going to use this mode when I don't need to modify the image data
+		this.surfaceOverlay = await loadPNGBitmap(url);
         return this.surfaceOverlay;
 	},
 
@@ -1125,12 +1107,12 @@ export const app = {
 			if (!this.tileOverlaysByPW[`${this.pw},${this.pwVertical}`]) {
 				// Generate it now (this seems like a bad idea since it will hang)
 				// Use different recolor map for vertical PWs
-				let recolorMapUsed = this.recolorOffscreen;
+				let recolorMapUsed = this.recolorOffscreenBuffer;
 				if (this.pwVertical < 0) {
-					recolorMapUsed = this.recolorOffscreenHeaven;
+					recolorMapUsed = this.recolorOffscreenHeavenBuffer;
 				}
 				else if (this.pwVertical > 0) {
-					recolorMapUsed = this.recolorOffscreenHell;
+					recolorMapUsed = this.recolorOffscreenHellBuffer;
 				}
 				if (biomeOverlayMode === 'expanded') {
 					this.tileOverlaysByPW[`${this.pw},${this.pwVertical}`] = createTileOverlaysExpanded(this.biomeData, recolorMapUsed, this.tileLayers, this.pw, this.pwVertical, this.isNGP);
@@ -1176,7 +1158,7 @@ export const app = {
 			for (let scene of this.pixelScenesByPW[`${this.pw},${this.pwVertical}`]) {
 				if (!scene || !scene.imgElement) return;
 				// Note positions of these *do not* use the tile offset
-				this.ctx.drawImage(scene.imgElement, 
+				this.ctx.drawImage(getPixelSceneCanvas(scene), 
 					scene.x + getWorldCenter(this.isNGP)*512 - this.pw*getWorldSize(this.isNGP)*512, 
 					scene.y + 14*512 - this.pwVertical*24576
 				);
@@ -1375,21 +1357,6 @@ export const app = {
 
 		this.ctx.restore();
 
-		// Overlay global mask using biome color lookup
-		// Iterate over biome map positions to find specific colors
-		
-		/*
-		this.ctxo.fillStyle = '#000000';
-		this.ctxo.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.ctxo.save();
-		this.setupCamera(this.ctxo);
-		
-		this.ctxo.imageSmoothingEnabled = false;
-		// Draw the pre-rendered recolor map scaled to world units
-		this.ctxo.drawImage(this.recolorOffscreen, 0, 0, this.w, this.h, 0, 0, this.w * 512, this.h * 512);
-		
-		this.ctxo.restore();
-		*/
 		//const t1 = performance.now();
 		//console.log(`Draw completed in ${(t1 - t0)} ms.`);
 	},

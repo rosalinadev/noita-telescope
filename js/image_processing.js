@@ -1,4 +1,5 @@
 import { BIOME_COLOR_TO_NAME, BIOME_COLORS_WITH_TILES } from "./generator_config.js";
+import { loadPNG } from "./png_sanitizer.js";
 import { MATERIAL_COLOR_CONVERSION } from "./potion_config.js";
 import { getBiomeAtWorldCoordinates, getWorldSize, tileToWorldCoordinates } from "./utils.js";
 
@@ -6,19 +7,16 @@ import { getBiomeAtWorldCoordinates, getWorldSize, tileToWorldCoordinates } from
 
 export async function createBiomeColorLookup(mapPath) {
 	const [img1, img2] = await Promise.all([
-		loadImage('./data/biome_maps/biome_map.png'),
-		loadImage(mapPath)
+		loadPNG('./data/biome_maps/biome_map.png'),
+		loadPNG(mapPath)
 	]);
-
-	const data1 = getImageData(img1);
-	const data2 = getImageData(img2);
 
 	const nameLookup = {};
     const backgroundColors = {};
 
-	for (let i = 0; i < data1.length; i += 4) {
-		const color1 = (data1[i] << 16) | (data1[i + 1] << 8) | data1[i + 2];
-		const color2 = (data2[i] << 16) | (data2[i + 1] << 8) | data2[i + 2];
+	for (let i = 0; i < img1.data.length; i += 4) {
+		const color1 = (img1.data[i] << 16) | (img1.data[i + 1] << 8) | img1.data[i + 2];
+		const color2 = (img2.data[i] << 16) | (img2.data[i + 1] << 8) | img2.data[i + 2];
 		if (BIOME_COLOR_TO_NAME[color1]) {
 			nameLookup[BIOME_COLOR_TO_NAME[color1]] = color2;
 		}
@@ -33,22 +31,6 @@ export async function createBiomeColorLookup(mapPath) {
 
 	//console.log(`Created biome color lookup with ${Object.keys(lookup).length} entries.`);
 	return [nameLookup, backgroundColors];
-}
-
-function getImageData(img) {
-	const canvas = new OffscreenCanvas(img.width, img.height);
-	const ctx = canvas.getContext('2d');
-	ctx.drawImage(img, 0, 0);
-	return ctx.getImageData(0, 0, img.width, img.height).data;
-}
-
-function loadImage(src) {
-	return new Promise((resolve, reject) => {
-		const img = new Image();
-		img.onload = () => resolve(img);
-		img.onerror = reject;
-		img.src = src;
-	});
 }
 
 // TODO: Rename these to something less confusing
@@ -172,8 +154,7 @@ export function createTileOverlays(biomeData, recolorOffscreen, layers, pwIndex,
 
     const recolorMaterials = document.getElementById('recolor-materials').checked;
     const clearSpawnPixels = document.getElementById('clear-spawn-pixels').checked;
-    const referenceCtx = recolorOffscreen.getContext('2d');
-    const referenceData = referenceCtx.getImageData(0, 0, recolorOffscreen.width, recolorOffscreen.height).data;
+    const referenceData = recolorOffscreen;
     
     const mapWidth = getWorldSize(isNGP);
 	const t0 = performance.now();
@@ -290,8 +271,7 @@ export function createTileOverlaysExpanded(biomeData, recolorOffscreen, layers, 
     const mapWidth = getWorldSize(isNGP);
     const t0 = performance.now();
     const overlays = [];
-    const referenceCtx = recolorOffscreen.getContext('2d');
-    const referenceData = referenceCtx.getImageData(0, 0, recolorOffscreen.width, recolorOffscreen.height).data;
+    const referenceData = recolorOffscreen;
 
     const edgeThreshold = 4; // Padding size
 
@@ -442,17 +422,11 @@ export function createTileOverlaysExpanded(biomeData, recolorOffscreen, layers, 
     return overlays;
 }
 
-
-export function makeBlackTransparent(ctx) {
-    const imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-    const data = imgData.data;
-
+export function makeBlackTransparent(data) {
     for (let i = 0; i < data.length; i += 4) {
         // Check if R=0, G=0, B=0
         if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) {
             data[i + 3] = 0; // Set Alpha to 0 (Transparent)
         }
     }
-
-    ctx.putImageData(imgData, 0, 0);
 }

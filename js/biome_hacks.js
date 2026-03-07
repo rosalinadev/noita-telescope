@@ -1,4 +1,5 @@
 import { NollaPrng } from "./nolla_prng.js";
+import { loadPNG } from "./png_sanitizer.js";
 import { getWorldCenter } from "./utils.js";
 
 const BIOME_PATH_FIND_WORLD_POS_X = 159;
@@ -30,43 +31,23 @@ export function applyMainBiomeHack(chunkX, pixels, width, height, biomeName, isN
 
 // Coalmine hack
 const BiomeOverlays = {
-	'coalmine': { path: './data/wang_tiles/extra_layers/coalmine.png', data: null },
+	'coalmine': { path: './data/wang_tiles/extra_layers/coalmine.png', image: null },
 };
 
-function preloadOverlays() {
-	let toLoad = Object.keys(BiomeOverlays).length;
+async function preloadOverlays() {
+	//let toLoad = Object.keys(BiomeOverlays).length;
 
 	for (let key in BiomeOverlays) {
 		const entry = BiomeOverlays[key];
-		const img = new Image();
-		img.onload = () => {
-			const canvas = document.createElement('canvas');
-			canvas.width = img.width;
-			canvas.height = img.height;
-			const ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0);
-			
-			entry.data = {
-				buffer: ctx.getImageData(0, 0, img.width, img.height).data,
-				width: img.width,
-				height: img.height
-			};
-
-			toLoad--;
-			if (toLoad === 0) {
-				//console.log('All biome overlays loaded');
-				return;
-			}
-		};
-		img.src = entry.path;
+		entry.image = await loadPNG(entry.path);
 	}
 }
 preloadOverlays();
 // TODO: Preload this with all other wang tiles
 
 export function applyCoalmineHack(pixels, width, height, biomeName) {
-	const overlay = BiomeOverlays[biomeName]?.data;
-	if (!overlay || !overlay.buffer) {
+	const overlay = BiomeOverlays[biomeName]?.image;
+	if (!overlay || !overlay.data) {
 		console.warn(`Overlay for ${biomeName} not ready!`);
 		return;
 	}
@@ -74,10 +55,10 @@ export function applyCoalmineHack(pixels, width, height, biomeName) {
 	for (let y = 0; y < Math.min(height, overlay.height); y++) {
 		for (let x = 0; x < Math.min(width, overlay.width); x++) {
 			const oIdx = (y * overlay.width + x) * 4;
-			const r = overlay.buffer[oIdx];
-			const g = overlay.buffer[oIdx + 1];
-			const b = overlay.buffer[oIdx + 2];
-			const a = overlay.buffer[oIdx + 3];
+			const r = overlay.data[oIdx];
+			const g = overlay.data[oIdx + 1];
+			const b = overlay.data[oIdx + 2];
+			const a = overlay.data[oIdx + 3];
 			if (a === 0) continue; // Skip transparent pixels
 
 			const hex = (r << 16) | (g << 8) | b;
@@ -103,8 +84,8 @@ export function applyCoalmineHack(pixels, width, height, biomeName) {
 }
 
 export function undoCoalmineHack(pixels, width, height, biomeName) {
-	const overlay = BiomeOverlays[biomeName]?.data;
-	if (!overlay || !overlay.buffer) {
+	const overlay = BiomeOverlays[biomeName]?.image;
+	if (!overlay || !overlay.data) {
 		console.warn(`Overlay for ${biomeName} not ready!`);
 		return;
 	}
@@ -112,10 +93,10 @@ export function undoCoalmineHack(pixels, width, height, biomeName) {
 	for (let y = 0; y < Math.min(height, overlay.height); y++) {
 		for (let x = 0; x < Math.min(width, overlay.width); x++) {
 			const oIdx = (y * overlay.width + x) * 4;
-			const r = overlay.buffer[oIdx];
-			const g = overlay.buffer[oIdx + 1];
-			const b = overlay.buffer[oIdx + 2];
-			const a = overlay.buffer[oIdx + 3];
+			const r = overlay.data[oIdx];
+			const g = overlay.data[oIdx + 1];
+			const b = overlay.data[oIdx + 2];
+			const a = overlay.data[oIdx + 3];
 			if (a === 0) continue; // Skip transparent pixels
 
 			const hex = (r << 16) | (g << 8) | b;

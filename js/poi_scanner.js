@@ -21,24 +21,21 @@ import {
 // Prevent infinite loops with nested pixel scenes (which hopefully shouldn't happen...)
 const MAX_SCAN_CYCLES = 10;
 
-export function prescanPixelScene(canvas, sourceBiome) {
+export function prescanPixelScene(imgData, sourceBiome) {
     const clearSpawnPixels = document.getElementById('clear-spawn-pixels').checked;
     const detectedSpawns = [];
-    if (!canvas) return detectedSpawns;
+    if (!imgData) return detectedSpawns;
 
-    const ctx = canvas.getContext('2d');
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data; // The RGBA buffer
-    const sWidth = canvas.width;
-    const sHeight = canvas.height;
+    const sWidth = imgData.width;
+    const sHeight = imgData.height;
 
     for (let y = 0; y < sHeight; y++) {
         for (let x = 0; x < sWidth; x++) {
             const idx = (y * sWidth + x) * 4;
-            const r = data[idx];
-            const g = data[idx + 1];
-            const b = data[idx + 2];
-            const a = data[idx + 3];
+            const r = imgData.data[idx];
+            const g = imgData.data[idx + 1];
+            const b = imgData.data[idx + 2];
+            const a = imgData.data[idx + 3];
 
             // Skip transparent or standard background pixels
             if (a === 0) continue;
@@ -57,15 +54,13 @@ export function prescanPixelScene(canvas, sourceBiome) {
                 });
             }
             if (clearSpawnPixels && index !== null) {
-                data[idx] = 0;
-                data[idx + 1] = 0;
-                data[idx + 2] = 0;
-                data[idx + 3] = 0;
+                imgData.data[idx] = 0;
+                imgData.data[idx + 1] = 0;
+                imgData.data[idx + 2] = 0;
+                imgData.data[idx + 3] = 0;
             }
         }
     }
-    ctx.putImageData(imgData, 0, 0);
-    //console.log(`Prescanned pixel scene for biome ${sourceBiome}, detected spawn points: `, detectedSpawns);
     return detectedSpawns;
 }
 
@@ -176,7 +171,8 @@ function getPixelSceneSpawnFunctionIndices(biomeData, biomeName, pixelScene, wor
 
 // Surprisingly this depends on NG0 vs NG+ but not on seed
 export function prescanSpawnFunctions(tileLayers, isNGP) {
-    const clearSpawnPixels = document.getElementById('clear-spawn-pixels').checked;
+    // TODO: Don't use clearSpawnPixels here, do it earlier
+    //const clearSpawnPixels = document.getElementById('clear-spawn-pixels').checked;
     const t0 = performance.now();
     let detectedSpawns = [];
     for (const layer of tileLayers) {
@@ -185,15 +181,11 @@ export function prescanSpawnFunctions(tileLayers, isNGP) {
         const height = layer.mapH;
         const sourceSpawnFunctions = BIOME_SPAWN_FUNCTION_MAP[sourceBiome] || [];
 
-        if (!layer.canvas || typeof layer.canvas.getContext !== 'function') {
+        // Probably no longer needed
+        if (!layer.buffer) {
             console.log("Skipping layer:", layer);
             continue;
         }
-
-        const canvas = layer.canvas;
-        const ctx = canvas.getContext('2d');
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imgData.data;
 
         if (sourceSpawnFunctions.length === 0) continue;
 
@@ -221,19 +213,23 @@ export function prescanSpawnFunctions(tileLayers, isNGP) {
                     });
                 }
                 // Not sure why this magenta one wasn't cleared
+                /*
                 if (clearSpawnPixels && (index !== null || colorInt === 0xff00ff)) {
-                        // Correct stride
-                        const targetIdx = ((y - 4) * width + x) * 4;
-                        data[targetIdx] = 0;
-                        data[targetIdx + 1] = 0;
-                        data[targetIdx + 2] = 0;
-                        data[targetIdx + 3] = 0;
-                    }
+                    // Correct stride
+                    const targetIdx = ((y - 4) * width + x) * 4;
+                    data[targetIdx] = 0;
+                    data[targetIdx + 1] = 0;
+                    data[targetIdx + 2] = 0;
+                    data[targetIdx + 3] = 0;
+                }
+                */
             }
         }
+        /*
         if (clearSpawnPixels) {
             ctx.putImageData(imgData, 0, 0);
         }
+        */
     }
     
     const t1 = performance.now();

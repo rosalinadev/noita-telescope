@@ -17,6 +17,7 @@ const ALIASES = {
 	'REGENERATION_FIELD': ['circle of vigour', 'circle of vigor', 'vigor', 'cov'],
 	'CASTER_CAST': ['inner spell', 'innerspell'],
 	'FUNKY_SPELL': ['???', 'funky spell', 'chaingun', 'bullet'],
+	'BOMB': ['bomb', 'bomb spell', 'summon bomb'],
 	// Item aliases
 	'great_chest': ['great treasure chest', 'great chest', 'gtc'],
 	'true_orb': ['34th orb', '34th', '34', 'orb 34'],

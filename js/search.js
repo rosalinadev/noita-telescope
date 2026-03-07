@@ -151,6 +151,7 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 		app.draw();
 
 		// Just testing to see what the sprite distributions are like, thinking of using it in some kind of summary maybe
+		// This ended up being kind of useless because it was much faster to run in C++ directly, figures
 		/*
 		if (searchAllPW && search.lastPwIdx === search.pwSequence.length - 1) {
 			// Get statistics on all scanned PoIs
@@ -185,6 +186,64 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 			console.log(`Scanned ${search.lastPwIdx + 1} PW coordinates with a total of ${totalWands} wands found.`);
 			console.log("Sprite distribution among found wands:");
 			console.log(spriteCounts);
+		}
+		*/
+
+		// Another testing idea, what is the tier distribution like?
+		/*
+		if (searchAllPW && search.lastPwIdx === search.pwSequence.length - 1) {
+			// Get statistics on all scanned PoIs
+			let totalWands = 0;
+			let tierCounts = {
+				'T1': 0, 'T1NS': 0, 'T1B': 0,
+				'T2': 0, 'T2NS': 0, 'T2B': 0,
+				'T3': 0, 'T3NS': 0, 'T3B': 0,
+				'T4': 0, 'T4NS': 0, 'T4B': 0,
+				'T5': 0, 'T5NS': 0, 'T5B': 0,
+				'T6': 0, 'T6NS': 0, 'T6B': 0,
+				'T10': 0, 'T10NS': 0, 'P': 0
+			};
+			for (let pwKey in app.poisByPW) {
+				const pois = app.poisByPW[pwKey];
+				for (let poi of pois) {
+					if (poi.type === 'wand') {
+						if (typeof poi.mana_max !== 'number') continue; // Skip prebuilt wands with unknown stats
+						totalWands += 1;
+						if (poi['level']) {
+							const level = poi['level'] > 10 ? 10 : poi['level'];
+							const unshuffle = poi['original_force_unshuffle'] === 1;
+							const wandType = poi['wand_type']; // normal or better
+							//const tier = "wand_" + (unshuffle ? "unshuffle" : "level") + "_" + level.toString().padStart(2, '0') + (wandType === 'better' ? '_better' : '');
+							const tier = 'T' + level.toString() + (unshuffle ? 'NS' : '') + (wandType === 'better' ? 'B' : '');
+							tierCounts[tier] += 1;
+						}
+						else {
+							tierCounts['P'] += 1;
+						}
+					}
+					else if (CONTAINER_TYPES.includes(poi.type) && poi.items) {
+						for (let item of poi.items) {
+							if (item.type === 'wand') {
+								totalWands += 1;
+								if (item['level']) {
+									const level = item['level'] > 10 ? 10 : item['level'];
+									const unshuffle = item['original_force_unshuffle'] === 1;
+									const wandType = item['wand_type']; // normal or better
+									//const tier = "wand_" + (unshuffle ? "unshuffle" : "level") + "_" + level.toString().padStart(2, '0') + (wandType === 'better' ? '_better' : '');
+									const tier = 'T' + level.toString() + (unshuffle ? 'NS' : '') + (wandType === 'better' ? 'B' : '');
+									tierCounts[tier] += 1;
+								}
+								else {
+									tierCounts['P'] += 1;
+								}
+							}
+						}
+					}
+				}
+			}
+			console.log(`Scanned ${search.lastPwIdx + 1} PW coordinates with a total of ${totalWands} wands found.`);
+			console.log("Tier distribution among found wands:");
+			console.log(tierCounts);
 		}
 		*/
 	}
@@ -266,21 +325,6 @@ function checkMatch(poi, f) {
 	//const data = poi.data;
 	const data = poi;
 	if (!data) return false;
-
-	/*
-	// Helper for recursive searching inside containers
-	const checkItemMatch = (item) => {
-		if (!item) return false;
-		if (item.type === 'wand') return checkWandMatch(item, f);
-		// Search spell names if it's a spell item
-		if (item.item === 'spell' && f.queryList.some(q => isMatch(item.spell, q))) return true;
-		// Enemy (TODO: Taikasauva)
-		if (item.type === 'enemy' && f.queryList.some(q => isMatch(item.enemy, q))) return true;
-		// Search item name and material
-		if (f.queryList.some(q => isMatch(item.item, q) || isMatch(item.material, q))) return true;
-		return false;
-	};
-	*/
 
 	if (data.type === 'wand') {
 		return checkWandMatch(data, f);

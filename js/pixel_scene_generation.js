@@ -1,8 +1,8 @@
 import { NollaPrng } from './nolla_prng.js';
 import { BLOCKED_COLORS, GENERAL_SCENES, PIXEL_SCENE_BIOME_MAP } from './pixel_scene_config.js';
 import { MATERIAL_COLOR_CONVERSION, MATERIAL_WANG_COLORS } from './potion_config.js';
-import { getBiomeAtWorldCoordinates, getWorldCenter, getWorldSize } from './utils.js';
-import { sanitizePng } from './png_sanitizer.js';
+import { getBiomeAtWorldCoordinates, getWorldSize } from './utils.js';
+import { loadPNG } from './png_sanitizer.js';
 import { prescanPixelScene } from './poi_scanner.js';
 import { BIOME_BACKGROUND_COLORS, TILE_OVERLAY_COLORS, makeBlackTransparent } from './image_processing.js';
 import { GENERATOR_CONFIG } from './generator_config.js';
@@ -10,10 +10,28 @@ import { app } from './app.js'; // Hacky but I don't feel like figuring out how 
 
 // This was originally constant but it sometimes needs to be cleared to regenerate the cache...
 export let PIXEL_SCENE_DATA = {};
+const PIXEL_SCENE_CANVAS_CACHE = {};
 
 export async function reloadPixelSceneCache() {
 	PIXEL_SCENE_DATA = {};
 	await loadPixelSceneData();
+}
+
+export function getPixelSceneCanvas(pixelScene) {
+	const pixelSceneKey = pixelScene.key;
+	const variantKey = pixelScene.variantKey || '';
+	const key = `${pixelSceneKey}/${variantKey}`;
+	if (PIXEL_SCENE_CANVAS_CACHE[key]) return PIXEL_SCENE_CANVAS_CACHE[key];
+	const pixelSceneData = PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey];
+	const width = PIXEL_SCENE_DATA[pixelSceneKey].width;
+	const height = PIXEL_SCENE_DATA[pixelSceneKey].height;
+	const canvas = new OffscreenCanvas(width, height);
+	const ctx = canvas.getContext('2d');
+	const imageData = ctx.createImageData(width, height);
+	imageData.data.set(pixelSceneData);
+	ctx.putImageData(imageData, 0, 0);
+	PIXEL_SCENE_CANVAS_CACHE[key] = canvas;
+	return canvas;
 }
 
 function getBiomeAlias(biomeName) {
@@ -62,22 +80,17 @@ export async function loadPixelSceneData() {
 				const key = getPixelSceneKey(biome, scene.name);
 				if (!PIXEL_SCENE_DATA[key]) {
 					const url = `./data/pixel_scenes/${getBiomeAlias(biome)}/${scene.name}.png`;
-					const cleanBlob = await sanitizePng(url);
-					const img = await createImageBitmap(cleanBlob);
-
-					const canvas = new OffscreenCanvas(img.width, img.height);
-					const ctx = canvas.getContext('2d', { willReadFrequently: true });
-					ctx.drawImage(img, 0, 0);
-					makeBlackTransparent(ctx);
+					const imgData = await loadPNG(url);
+					makeBlackTransparent(imgData.data);
 					// Prescan the pixel scene for spawn points and store them in a global lookup for later use during generation, keyed by biome and scene name
-					const spawnPoints = prescanPixelScene(canvas, biome);
+					const spawnPoints = prescanPixelScene(imgData, biome);
 					PIXEL_SCENE_DATA[key] = {
 						key: key,
 						biome: biome,
 						name: scene.name,
-						imgElement: canvas, // Store the canvas directly since we need to manipulate it for recoloring
-						width: img.width,
-						height: img.height,
+						imgElement: imgData.data, // Store the image data directly since we need to manipulate it for recoloring
+						width: imgData.width,
+						height: imgData.height,
 						spawnPoints: spawnPoints,
 						isCosmetic: spawnPoints.length === 0, // If there are no spawn points, we can consider it purely cosmetic and can optionally skip some checks during generation
 						variants: {}, // Used for color material changes, keyed as `${color}=${material}`
@@ -211,7 +224,7 @@ export function loadPixelScene(biomeData, biomeName, sceneName, ws, ng, x, y, sk
 	if (biomeName) {
 		variantKey = `biome=${biomeName}`;
 		if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey]) {
-			PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, ''), biomeName, x, y);
+			PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, ''), PIXEL_SCENE_DATA[pixelSceneKey].width, PIXEL_SCENE_DATA[pixelSceneKey].height, biomeName, x, y);
 			//console.log(`Created biome variant of pixel scene ${pixelSceneKey} with key ${variantKey}`);
 		}
 	}
@@ -301,24 +314,14 @@ export function loadRandomPixelScene(biomeData, biomeName, scene_list, ws, ng, x
 				for (const color of sortedColors) {
 					// Start with the recolored variant
 					let pixelSceneImage = getPixelSceneVariant(pixelSceneKey, variantKey);
-					//const color = Object.keys(scene.color_material)[0];
-					// TODO: Need to adjust to work for multiple materials. Low priority since as far as I can tell it's only used for one pixel scene in the vault, and the materials are boring
 					const materials = scene.color_material[color];
 					prng.SetRandomSeed(ws + ng, x + 11, y - 21); //?
 					let r = prng.ProceduralRandom(ws + ng, x + 11, y - 21); // Note ProceduralRandom returns a value in (0, 1] so this is actually fine
-					//console.log(x, y, r);
 					let mr = Math.ceil(r * materials.length) - 1;
 					
 					const targetMaterial = materials[mr];
 					outputScene.material = targetMaterial;
 					let materialColor = MATERIAL_WANG_COLORS[materials[mr]];
-					// It took me a bit too long to notice that this was the source of my issues, we shouldn't be recoloring it yet
-					/*
-					if (POTION_COLORS[materials[mr]]) {
-						// If it's a potion, use the potion color instead of the material color
-						materialColor = POTION_COLORS[materials[mr]];
-					}
-					*/
 					// See if the recolored pixel scene is already cached
 					variantKey += (variantKey !== '' ? '&' : '') + `${color}=${targetMaterial}`;
 					if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[variantKey]) {
@@ -330,20 +333,11 @@ export function loadRandomPixelScene(biomeData, biomeName, scene_list, ws, ng, x
 						//console.log(`Created variant of pixel scene ${pixelSceneKey} with key ${variantKey}`);
 					}
 				}
-				//console.log(`Pixel scene ${scene.name} has recolorable material ${materials[mr]} with color ${materialColor}`);
-				// Handling this by a global setting so it's not so weirdly nondeterminstic, depends on whether or not you've loaded the unique pixel scene
-				// (of which there is only one, shrine_alt in coalmine_alt)
-				/*
-				if (scene.unique) {
-					scene.prob = 0.0;
-					console.log(`Pixel scene ${scene.name} is unique, setting its probability to 0.`);
-				}
-				*/
 			}
 			// Recolor the pixel scene for the biome if needed
 			const finalVariantKey = variantKey + (variantKey !== '' ? '&' : '') + `biome=${biomeName}`;
 			if (!PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey]) {
-				PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, variantKey), biomeName, x, y);
+				PIXEL_SCENE_DATA[pixelSceneKey].variants[finalVariantKey] = recolorPixelSceneForBiome(getPixelSceneVariant(pixelSceneKey, variantKey), PIXEL_SCENE_DATA[pixelSceneKey].width, PIXEL_SCENE_DATA[pixelSceneKey].height, biomeName, x, y);
 				//console.log(`Created biome variant of pixel scene ${pixelSceneKey} with key ${finalVariantKey}`);
 			}
 			outputScene.variantKey = finalVariantKey;
@@ -358,98 +352,95 @@ export function loadRandomPixelScene(biomeData, biomeName, scene_list, ws, ng, x
 	return null;
 }
 
-function recolorPixelSceneForBiome(sourceCanvas, targetBiome, x, y) {
-    const recolorMaterials = document.getElementById('recolor-materials').checked;
-    const width = sourceCanvas.width;
-    const height = sourceCanvas.height;
+function recolorPixelSceneForBiome(sourceData, width, height, targetBiome, x, y) {
+	const recolorMaterials = document.getElementById('recolor-materials').checked;
+	
+	const outData = new Uint8Array(sourceData.length);
+	outData.set(sourceData);
 
-    // 1. Create a NEW canvas and context for the output
-    const outCanvas = document.createElement('canvas');
-    outCanvas.width = width;
-    outCanvas.height = height;
-    const outCtx = outCanvas.getContext('2d');
-
-    // 2. Draw source to output, then grab THAT data so source stays pristine
-    outCtx.drawImage(sourceCanvas, 0, 0);
-    const imgData = outCtx.getImageData(0, 0, width, height);
-    const data32 = new Uint32Array(imgData.data.buffer);
-
-    // Prepare color values for 32-bit ABGR format (Little-Endian)
-    const pack = (hex) => (0xFF << 24) | ((hex & 0xFF) << 16) | (hex & 0xFF00) | ((hex >> 16) & 0xFF);
-
-	let targetColor = pack(TILE_OVERLAY_COLORS[targetBiome] || 0xff00ff);
-	let bgColor = pack(BIOME_BACKGROUND_COLORS[targetBiome] || 0x000000);
-	if (targetColor === pack(0xff00ff)) {
-		//targetColor = pack(BIOME_BACKGROUND_COLORS[targetBiome] || 0xff00ff);
-		//bgColor = 0x000000; // Default to black if biome color is missing
+	let targetColor = TILE_OVERLAY_COLORS[targetBiome] || 0xff00ff;
+	let bgColor = BIOME_BACKGROUND_COLORS[targetBiome] || 0x000000;
+	let targetR = (targetColor >> 16) & 0xFF;
+	let targetG = (targetColor >> 8) & 0xFF;
+	let targetB = targetColor & 0xFF;
+	let bgColorR = (bgColor >> 16) & 0xFF;
+	let bgColorG = (bgColor >> 8) & 0xFF;
+	let bgColorB = bgColor & 0xFF;
+	const biomeMapWidth = getWorldSize(app.ngPlusCount > 0);
+	if (targetR === 255 && targetG === 0 && targetB === 255) {
 		// As a fallback, use the color of the biome map?
 		// TODO: Currently using app references here when I probably shouldn't
-		const chunkX = (Math.floor((getWorldCenter(app.ngPlusCount > 0) * 512 + x + width / 2) / 512) % getWorldSize(app.ngPlusCount > 0) + getWorldSize(app.ngPlusCount > 0)) % getWorldSize(app.ngPlusCount > 0);
-		let chunkY = Math.floor((14*512 + y + height / 2) / 512);
+		// Using center of the pixel scene, but it shouldn't really matter
+		const chunkX = (Math.floor((biomeMapWidth * 256 + x + width/2) / 512) % getWorldSize(app.ngPlusCount > 0) + getWorldSize(app.ngPlusCount > 0)) % getWorldSize(app.ngPlusCount > 0);
+		let chunkY = Math.floor((14*512 + y + height/2) / 512);
 		if (chunkY < 0) chunkY = 0;
 		if (chunkY > 47) chunkY = 47;
-		const backgroundColor = app.recolorOffscreen.getContext('2d').getImageData(chunkX, chunkY, 1, 1).data;
-		// Some attempt to make the background color not exactly the same as the terrain color... Need to just get a better background and foreground.
-		targetColor = pack(((backgroundColor[0]*0.75) << 16) | ((backgroundColor[1]*0.75) << 8) | (backgroundColor[2]*0.75));
-		bgColor = 0xFF000000;
+		const bgColorIdx = chunkY * biomeMapWidth + chunkX;
+		// TODO: Some attempt to make the background color not exactly the same as the terrain color... Need to just get a better background and foreground.
+		targetR = Math.floor(app.recolorOffscreenBuffer[bgColorIdx] * 0.75);
+		targetG = Math.floor(app.recolorOffscreenBuffer[bgColorIdx + 1] * 0.75);
+		targetB = Math.floor(app.recolorOffscreenBuffer[bgColorIdx + 2] * 0.75);
+		bgColorR = 0;
+		bgColorG = 0;
+		bgColorB = 0;
 	}
-    
-    const airDetect = 0xFF420000; // ABGR for 0x000042 (Air)
 
-    for (let i = 0; i < data32.length; i++) {
-        const color = data32[i];
-        const r = color & 0xFF;
-        const g = (color >> 8) & 0xFF;
-        const b = (color >> 16) & 0xFF;
+	for (let i = 0; i < outData.length; i += 4) {
+		const r = outData[i];
+		const g = outData[i + 1];
+		const b = outData[i + 2];
 
-        // A. Handle Grays (Material Recolor)
-        if (r === g && g === b && r > 0) {
-            data32[i] = targetColor;
-        } 
-        // B. Replace Air with Background
-        else if (color === airDetect) {
-            data32[i] = bgColor;
-        } 
-        // C. Recolor Wang Colors
-        else if (recolorMaterials && (r > 0 || g > 0 || b > 0)) {
-            const rgb = (r << 16) | (g << 8) | b;
-            const matColor = MATERIAL_COLOR_CONVERSION[rgb];
-            if (matColor) data32[i] = pack(matColor);
-        }
-    }
+		// Handle Grays (Material Recolor)
+		if (r === g && g === b && r > 0) {
+			outData[i] = targetR;
+			outData[i + 1] = targetG;
+			outData[i + 2] = targetB;
+			//outData[i + 3] = targetA;
+		} 
+		// Replace Air with Background
+		else if (r === 0x00 && g === 0x00 && b === 0x42) {
+			outData[i] = bgColorR;
+			outData[i + 1] = bgColorG;
+			outData[i + 2] = bgColorB;
+		} 
+		// Recolor Wang Colors
+		else if (recolorMaterials && (r > 0 || g > 0 || b > 0)) {
+			const rgb = (r << 16) | (g << 8) | b;
+			const matColor = MATERIAL_COLOR_CONVERSION[rgb];
+			if (matColor) {
+				outData[i] = (matColor >> 16) & 0xFF;
+				outData[i + 1] = (matColor >> 8) & 0xFF;
+				outData[i + 2] = matColor & 0xFF;
+			}
+		}
+	}
 
-    outCtx.putImageData(imgData, 0, 0);
-    return outCanvas;
+	return outData;
 }
 
-function recolorPixelScene(sourceCanvas, source_color, target_color) {
-    const width = sourceCanvas.width;
-    const height = sourceCanvas.height;
+// Width and height are not actually needed here
+function recolorPixelScene(sourceData, sourceColor, targetColor) {
+    const outData = new Uint8Array(sourceData.length);
+	outData.set(sourceData);
 
-    const outCanvas = document.createElement('canvas');
-    outCanvas.width = width;
-    outCanvas.height = height;
-    const outCtx = outCanvas.getContext('2d', { willReadFrequently: true });
+	const sourceR = (sourceColor >> 16) & 0xFF;
+	const sourceG = (sourceColor >> 8) & 0xFF;
+	const sourceB = sourceColor & 0xFF;
 
-    // Draw the original image to the new canvas
-    outCtx.drawImage(sourceCanvas, 0, 0);
-    const imgData = outCtx.getImageData(0, 0, width, height);
-    const data32 = new Uint32Array(imgData.data.buffer);
+	const targetR = (targetColor >> 16) & 0xFF;
+	const targetG = (targetColor >> 8) & 0xFF;
+	const targetB = targetColor & 0xFF;
 
-    // Convert hex RRGGBB to ABGR (Little-Endian)
-    // We ignore the top 8 bits (Alpha) in the pack for the source comparison
-    const pack = (hex) => ((hex & 0xFF) << 16) | (hex & 0xFF00) | ((hex >> 16) & 0xFF);
-    
-    const sBGR = pack(source_color);
-    const tABGR = (0xFF << 24) | pack(target_color); // Force alpha to 255 for output
-
-    for (let i = 0; i < data32.length; i++) {
-        // Mask out the Alpha channel (top 8 bits) to compare only BGR
-        if ((data32[i] & 0x00FFFFFF) === sBGR) {
-            data32[i] = tABGR;
-        }
+    for (let i = 0; i < outData.length; i += 4) {
+        const r = outData[i];
+		const g = outData[i + 1];
+		const b = outData[i + 2];
+		if (r === sourceR && g === sourceG && b === sourceB) {
+			outData[i] = targetR;
+			outData[i + 1] = targetG;
+			outData[i + 2] = targetB;
+		}
     }
 
-    outCtx.putImageData(imgData, 0, 0);
-    return outCanvas;
+    return outData;
 }

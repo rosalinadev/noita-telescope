@@ -257,18 +257,18 @@ export function getMaterialAtWorldCoordinates(tileLayers, pixelScenes, worldX, w
         if (localX >= 0 && localX < scene.width && localY >= 0 && localY < scene.height) {
             // Use original scene data via key to avoid recoloring issues
             // Need to use a variant though if there were random materials
-            let ctx;
+            let imgData;
             let shortenedVariantKey = scene.variantKey ? scene.variantKey.replace(/&?biome=[^&]+/, '') : '';
             if (shortenedVariantKey !== '') {
                 //console.log(`Using variant key ${shortenedVariantKey} for pixel scene ${scene.name} when looking up material at (${worldX}, ${worldY})`);
-                ctx = PIXEL_SCENE_DATA[scene.key].variants[shortenedVariantKey].getContext('2d');
+                imgData = PIXEL_SCENE_DATA[scene.key].variants[shortenedVariantKey];
             } else {
-                ctx = PIXEL_SCENE_DATA[scene.key].imgElement.getContext('2d');
+                imgData = PIXEL_SCENE_DATA[scene.key].imgElement;
             }
-            const pixelData = ctx.getImageData(localX, localY, 1, 1).data;
-            const r = pixelData[0];
-            const g = pixelData[1];
-            const b = pixelData[2];
+            const pixelIdx = (localY * scene.width + localX) * 4; // RGBA in one array
+            const r = imgData[pixelIdx];
+            const g = imgData[pixelIdx + 1];
+            const b = imgData[pixelIdx + 2];
             const hex = (r << 16) | (g << 8) | b;
             const hexStr = `${hex.toString(16).padStart(6, '0')}`;
             //console.log(`Pixel scene color at (${worldX}, ${worldY}) [local: (${localX}, ${localY})]: #${hexStr}`);

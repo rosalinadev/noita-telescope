@@ -80,14 +80,17 @@ class BiomePainter {
  * Generates the biome map data.
  * @param {number} seed World Seed
  * @param {number} ng New Game+ Count
- * @param {Uint32Array} basePixels Initial pixel data from the base PNG
+ * @param {Uint32Array} baseImageData Initial pixel data from the base PNG, RGBA
  * @param {number} width 
  * @param {number} height 
  * @returns {Object} { pixels: Uint32Array, orbs: Array }
  */
-export function generateBiomeData(seed, ng, basePixels, width, height) {
+export function generateBiomeData(seed, ng, baseImageData, width, height) {
     // Copy base pixels to new buffer to avoid modifying the cached source
-    const pixels = new Uint32Array(basePixels);
+    const pixels = new Uint32Array(width * height);
+    for (let i = 0; i < baseImageData.length; i++) {
+        pixels[i] = 0xFF000000 | (baseImageData[i*4]<<16) | (baseImageData[i*4+1]<<8) | baseImageData[i*4+2];
+    }
     const orbs = [];
     
     // If NG+ is 0, we just return the base map (static)
@@ -127,10 +130,6 @@ export function generateBiomeData(seed, ng, basePixels, width, height) {
     // 2. NG+ Variations
     if (ng % 2 === 0) {
         // Tower
-        // Wrong, this was an LLM "optimization"
-        //const g = 0xFF3D3E37;
-        //const keys = Object.keys(b);
-        //keys.forEach((k, i) => b[k] = g + i);
         b.coal = 0xFF3D3E37; 
         b.coll = 0xFF3D3E37; 
         b.fungi = 0xFF3D3E3B; 
