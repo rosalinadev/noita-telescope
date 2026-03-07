@@ -33,8 +33,10 @@ export const app = {
 	overlay: null, 
 	surfaceOverlay: null,
 	surfaceOverlayPW: null,
+	surfaceOverlayPWAddition: null,
 	surfaceOverlayNGP: null,
 	surfaceOverlayNGPPW: null,
+	surfaceOverlayNGPPWAddition: null,
 
 	ctxo: null, 
 	// Background maps, recolored by biome
@@ -98,12 +100,16 @@ export const app = {
 
 		this.initUnlocks();
 		this.initRegions();
-		this.preload().then(() => this.getDailyRunSeed());
+		this.preload();
 
 		// Menu Toggles
 		document.querySelector('.adv-toggle').onclick = () => this.toggleAdvancedSearch();
 		document.querySelector('.debug-toggle').onclick = () => this.toggleDebugOptions();
 		
+		document.getElementById('daily-run-button').onclick = () => {
+			this.getDailyRunSeed();
+		};
+
 		// PW Controls
 		// Horizontal
 		const pwInput = document.getElementById('pw');
@@ -162,6 +168,7 @@ export const app = {
 			if (!value || isNaN(value) || value < 0) value = 0;
 			else if (value > 2147483647) value = 2147483647;
 			document.getElementById('seed').value = value;
+			this.saveSettings();
 			this.generate(true, true);
 		};
 		document.getElementById('ng').onchange = () => {
@@ -169,6 +176,7 @@ export const app = {
 			if (!value || isNaN(value) || value < 0) value = 0;
 			else if (value > 28) value = 28;
 			document.getElementById('ng').value = value;
+			this.saveSettings();
 			this.generate(true, true);
 		};
 		// No longer using this button, just change the seed/NG+ count and it will auto-generate now
@@ -176,59 +184,69 @@ export const app = {
 
 		// Perk Controls
 		
-		document.getElementById('no-more-shuffle').onchange = () => {this.perks['noMoreShuffle'] = document.getElementById('no-more-shuffle').checked; this.generate(false, true)};
-		document.getElementById('greed-curse').onchange = () => {this.perks['greedCurse'] = document.getElementById('greed-curse').checked; this.generate(false, true)};
-		document.getElementById('extra-shop-items').onchange = () => {this.perks['extraShopItems'] = parseInt(document.getElementById('extra-shop-items').value); this.generate(false, true)};
+		document.getElementById('no-more-shuffle').onchange = () => {this.perks['noMoreShuffle'] = document.getElementById('no-more-shuffle').checked; this.saveSettings(); this.generate(false, true)};
+		document.getElementById('greed-curse').onchange = () => {this.perks['greedCurse'] = document.getElementById('greed-curse').checked; this.saveSettings(); this.generate(false, true)};
+		document.getElementById('extra-shop-items').onchange = () => {this.perks['extraShopItems'] = parseInt(document.getElementById('extra-shop-items').value); this.saveSettings(); this.generate(false, true)};
 		
 		// Debug Controls
 		
 		document.getElementById('skip-cosmetic-scenes').onchange = () => {
 			this.skipCosmeticScenes = document.getElementById('skip-cosmetic-scenes').checked;
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		document.getElementById('exclude-taikasauva').onchange = () => {
 			this.excludeTaikasauva = document.getElementById('exclude-taikasauva').checked;
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		document.getElementById('debug-enable-edge-noise').onchange = () => {
 			this.tileOverlaysByPW = {}; // Clear cached overlays so they will be regenerated with the new mode
+			this.saveSettings();
 			this.generate(false, true);
 		};
-		document.getElementById('debug-custom-art').onchange = async () => {
-			if (!document.getElementById('debug-custom-art').checked) {
+		document.getElementById('custom-art').onchange = async () => {
+			if (!document.getElementById('custom-art').checked) {
 				this.surfaceOverlay = null;
 				this.surfaceOverlayPW = null;
+				this.surfaceOverlayPWAddition = null;
 				this.surfaceOverlayNGP = null;
 				this.surfaceOverlayNGPPW = null;
+				this.surfaceOverlayNGPPWAddition = null;
 			}
 			else {
 				await this.getSurfaceOverlays();
 			}
+			this.saveSettings();
 			this.draw();
 		}
-		document.getElementById('debug-draw').onchange = () => this.draw();
-		document.getElementById('debug-path').onchange = () => this.draw();
-		document.getElementById('debug-hide-pois').onchange = () => this.draw();
-		document.getElementById('debug-extra-rerolls').onchange = () => this.generate(true, true);
-		document.getElementById('debug-rng-info').onchange = () => this.draw();
-		document.getElementById('debug-original-biome-map').onchange = () => this.draw();
-		document.getElementById('debug-small-pois').onchange = () => this.draw();
-		document.getElementById('debug-fix-holy-mountain-edge-noise').onchange = () => this.generate(true, true);
+		document.getElementById('debug-show-tile-bounds').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-show-path').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-hide-pois').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-extra-rerolls').onchange = () => {this.saveSettings(); this.generate(true, true);};
+		document.getElementById('debug-rng-info').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-original-biome-map').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-small-pois').onchange = () => {this.saveSettings(); this.draw();};
+		document.getElementById('debug-fix-holy-mountain-edge-noise').onchange = () => {this.saveSettings(); this.generate(true, true);};
 		document.getElementById('clear-spawn-pixels').onchange = () => {
 			// TODO: Should probably rework this so it doesn't need to completely regenerate, but this is fine for now
+			this.saveSettings();
 			reloadPixelSceneCache().then(() => this.generate(true, true));
 		};
 		document.getElementById('recolor-materials').onchange = () => {
 			// TODO: Should probably rework this so it doesn't need to completely regenerate, but this is fine for now
+			this.saveSettings();
 			reloadPixelSceneCache().then(() => this.generate(true, true));
 		};
 		document.getElementById('debug-biome-overlay-mode').onchange = () => {
+			this.saveSettings();
 			this.tileOverlaysByPW = {}; // Clear cached overlays so they will be regenerated with the new mode
 			this.draw();
 			//this.generate(true, true); // TODO: Probably don't need to completely regenerate tiles
 		};
 		document.getElementById('exclude-edge-cases').onchange = () => {
 			this.excludeEdgeCases = document.getElementById('exclude-edge-cases').checked;
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		document.getElementById('debug-edge-noise').onchange = () => {
@@ -242,9 +260,11 @@ export const app = {
 			else {
 				COALMINE_ALT_SCENES["g_pixel_scene_02"][0].prob = 0.5;
 			}
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		document.getElementById('enable-static-pixel-scenes').onchange = () => {
+			this.saveSettings();
 			reloadPixelSceneCache().then(() => this.generate(true, true));
 		};
 		// Search
@@ -330,6 +350,7 @@ export const app = {
 
 			// Almost forgot about this
 			this.unlocksChanged = true;
+			this.saveSettings();
 
 			this.generate(false, true);
 		});
@@ -471,6 +492,7 @@ export const app = {
 			cb.onchange = () => {
 				// Set enabled state in config based on checkbox
 				GENERATOR_CONFIG[key].enabled = cb.checked;
+				this.saveSettings();
 				this.generate(true, true);
 			};
 		});
@@ -479,6 +501,7 @@ export const app = {
 			for (const region of Object.keys(GENERATOR_CONFIG)) {
 				GENERATOR_CONFIG[region].enabled = true;
 			}
+			this.saveSettings();
 			this.generate(true, true);
 		};
 		document.getElementById('regions-useful').onclick = () => {
@@ -495,6 +518,7 @@ export const app = {
 					GENERATOR_CONFIG[region].enabled = false;
 				}
 			}
+			this.saveSettings();
 			this.generate(true, true);
 		};
 		document.getElementById('regions-none').onclick = () => {
@@ -502,6 +526,7 @@ export const app = {
 			for (const region of Object.keys(GENERATOR_CONFIG)) {
 				GENERATOR_CONFIG[region].enabled = false;
 			}
+			this.saveSettings();
 			this.generate(true, true);
 		};
 	},
@@ -520,17 +545,20 @@ export const app = {
 			list.appendChild(div);
 			cb.onchange = () => {
 				this.unlocksChanged = true;
+				this.saveSettings();
 				this.generate(false, true);
 			};
 		});
 		document.getElementById('unlock-all').onclick = () => {
 			this.unlocksChanged = true;
 			list.querySelectorAll('input').forEach(c => c.checked = true);
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		document.getElementById('unlock-none').onclick = () => {
 			this.unlocksChanged = true;
 			list.querySelectorAll('input').forEach(c => c.checked = false);
+			this.saveSettings();
 			this.generate(false, true);
 		};
 		// Generate function sets the unlocks based on the current state of the checkboxes, so no need to do it here
@@ -717,6 +745,7 @@ export const app = {
 
 	async preload() {
 		this.setLoading(true, "Loading Assets...");
+		this.loadSettings();
 		await loadTranslations();
 		try {
 			this.baseBiomeMapNG0 = await loadPNG('./data/biome_maps/biome_map.png');
@@ -727,7 +756,7 @@ export const app = {
 		await loadPixelSceneData();
 		console.log("Finished loading pixel scene data.");
 
-		if (document.getElementById('debug-custom-art').checked) {
+		if (document.getElementById('custom-art').checked) {
 			await this.getSurfaceOverlays();
 		}
 		this.setLoading(false);
@@ -1026,14 +1055,13 @@ export const app = {
 		// Going to use this mode when I don't need to modify the image data
 		this.surfaceOverlay = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay.png');
 		this.surfaceOverlayPW = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_pw.png');
+		this.surfaceOverlayPWAdditional = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_pw_addition.png');
 		//this.surfaceOverlayNGP = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_ngp.png');
 		//this.surfaceOverlayNGPPW = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_ngp_pw.png');
 		/*
 		this.surfaceOverlayScenes = {
 			"orb_room": await loadPNGBitmap('./data/biome_maps/custom/orb_room.png'),
 			"cursed_orb_room": await loadPNGBitmap('./data/biome_maps/custom/cursed_orb_room.png'),
-			"essence_eater_winter": await loadPNGBitmap('./data/biome_maps/custom/essence_eater_winter.png'),
-			"essence_eater_desert": await loadPNGBitmap('./data/biome_maps/custom/essence_eater_desert.png'),
 			"echoing_spire": await loadPNGBitmap('./data/biome_maps/custom/echoing_spire.png'),
 		};
 		*/
@@ -1089,18 +1117,12 @@ export const app = {
 						this.ctx.drawImage(this.surfaceOverlayPW, 0, 0, this.w * 512, this.h * 512);
 					}
 				}
-				// TODO: Render custom scene overlays
-				// Essence eaters (need to get positions)
-				/*
-				if (this.pw === 1 || this.pw === -1) {
-					if (this.surfaceOverlayScenes['essence_eater_winter']) {
-						this.ctx.drawImage(this.surfaceOverlayScenes['essence_eater_winter'], 0, 0, 512, 512);
-					}
-					if (this.surfaceOverlayScenes['essence_eater_desert']) {
-						this.ctx.drawImage(this.surfaceOverlayScenes['essence_eater_desert'], 0, 0, 512, 512);
+				// Extra overlay for just PW +/- 1
+				if (this.pw === -1 || this.pw === 1) {
+					if (this.surfaceOverlayPWAdditional) {
+						this.ctx.drawImage(this.surfaceOverlayPWAdditional, 0, 0, this.w * 512, this.h * 512);
 					}
 				}
-				*/
 			}
 			else {
 				if (this.pw === 0) {
@@ -1113,13 +1135,18 @@ export const app = {
 						this.ctx.drawImage(this.surfaceOverlayNGPPW, 0, 0, this.w * 512, this.h * 512);
 					}
 				}
-				// TODO: Render custom scene overlays
-				// Orb rooms
+				// Extra overlay for just PW +/- 1
+				if (this.pw === -1 || this.pw === 1) {
+					if (this.surfaceOverlayPWAdditional) {
+						this.ctx.drawImage(this.surfaceOverlayPWAdditional, 0, 0, this.w * 512, this.h * 512);
+					}
+				}
+				// TODO: Orb rooms
 			}
 		}
 
-		const showBoxes = document.getElementById('debug-draw').checked;
-		const showPaths = document.getElementById('debug-path').checked;
+		const showBoxes = document.getElementById('debug-show-tile-bounds').checked;
+		const showPaths = document.getElementById('debug-show-path').checked;
 
 		const biomeOverlayMode = document.getElementById('debug-biome-overlay-mode').value;
 
@@ -1466,6 +1493,7 @@ export const app = {
 				if (!isNaN(seedResult)) {
 					document.getElementById('seed').value = seedResult;
 					document.getElementById('ng').value = 0;
+					this.saveSettings();
 					this.generate(true, true);
 				}
 				else {
@@ -1475,6 +1503,96 @@ export const app = {
 		}).catch(error => {
 			console.error('Error fetching daily seed:', error);
 		});
+	},
+
+	saveSettings() {
+		const settings = {
+			seed: document.getElementById('seed').value,
+			ngPlusCount: document.getElementById('ng').value,
+			//pw: document.getElementById('pw').value,
+			//pwVertical: document.getElementById('pw-vertical').value,
+			noMoreShuffle: document.getElementById('no-more-shuffle').checked,
+			greedCurse: document.getElementById('greed-curse').checked,
+			extraItemsInHolyMountain: document.getElementById('extra-shop-items').value,
+			skipCosmeticScenes: document.getElementById('skip-cosmetic-scenes').checked,
+			visitedCoalmineAltShrine: document.getElementById('visited-coalmine-alt-shrine').checked,
+			excludeTaikasauva: document.getElementById('exclude-taikasauva').checked,
+			recolorMaterials: document.getElementById('recolor-materials').checked,
+			clearSpawnPixels: document.getElementById('clear-spawn-pixels').checked,
+			customArt: document.getElementById('custom-art').checked,
+			enableStaticPixelScenes: document.getElementById('enable-static-pixel-scenes').value,
+			hidePois: document.getElementById('debug-hide-pois').checked,
+			originalBiomeMap: document.getElementById('debug-original-biome-map').checked,
+			enableEdgeNoise: document.getElementById('debug-enable-edge-noise').checked,
+			edgeNoiseDebug: document.getElementById('debug-edge-noise').checked,
+			overlayMode: document.getElementById('debug-biome-overlay-mode').value,
+			showTileBounds: document.getElementById('debug-show-tile-bounds').checked,
+			showPath: document.getElementById('debug-show-path').checked,
+			//smallPois: document.getElementById('debug-small-pois').checked,
+			//fixHolyMountainEdgeNoise: document.getElementById('debug-fix-holy-mountain-edge-noise').checked,
+			//excludeEdgeCases: document.getElementById('exclude-edge-cases').checked,
+			//extraRerolls: document.getElementById('debug-extra-rerolls').value,
+			//rngInfo: document.getElementById('debug-rng-info').checked,
+		};
+		// Unlock settings
+		for (const unlock of Object.keys(UNLOCKABLES)) {
+			settings[`unlock_${unlock}`] = document.getElementById(`unlock-${unlock}`).checked;
+		}
+		// Region settings
+		for (const region of Object.keys(GENERATOR_CONFIG)) {
+			settings[`region_${region}`] = document.getElementById(`region-${region}`).checked;
+		}
+		localStorage.setItem('noitaTelescopeSettings', JSON.stringify(settings));
+		console.log("Settings saved.");
+		//console.log(settings);
+	},
+
+	loadSettings() {
+		const settingsStr = localStorage.getItem('noitaTelescopeSettings');
+		if (settingsStr) {
+			try {
+				const settings = JSON.parse(settingsStr);
+				document.getElementById('seed').value = settings.seed || '';
+				document.getElementById('ng').value = settings.ngPlusCount || 0;
+				//document.getElementById('pw').value = settings.pw || 0;
+				//document.getElementById('pw-vertical').value = settings.pwVertical || 0;
+				document.getElementById('no-more-shuffle').checked = settings.noMoreShuffle || false;
+				document.getElementById('greed-curse').checked = settings.greedCurse || false;
+				document.getElementById('extra-shop-items').value = settings.extraItemsInHolyMountain || 0;
+				document.getElementById('skip-cosmetic-scenes').checked = settings.skipCosmeticScenes || false;
+				document.getElementById('visited-coalmine-alt-shrine').checked = settings.visitedCoalmineAltShrine || false;
+				document.getElementById('exclude-taikasauva').checked = settings.excludeTaikasauva || false;
+				document.getElementById('recolor-materials').checked = settings.recolorMaterials || false;
+				document.getElementById('clear-spawn-pixels').checked = settings.clearSpawnPixels || false;
+				document.getElementById('custom-art').checked = settings.customArt || false;
+				document.getElementById('enable-static-pixel-scenes').value = settings.enableStaticPixelScenes || 'none';
+				document.getElementById('debug-hide-pois').checked = settings.hidePois || false;
+				document.getElementById('debug-original-biome-map').checked = settings.originalBiomeMap || false;
+				document.getElementById('debug-enable-edge-noise').checked = settings.enableEdgeNoise || false;
+				document.getElementById('debug-edge-noise').checked = settings.edgeNoiseDebug || false;
+				document.getElementById('debug-biome-overlay-mode').value = settings.overlayMode || 'none';
+				document.getElementById('debug-show-tile-bounds').checked = settings.showTileBounds || false;
+				document.getElementById('debug-show-path').checked = settings.showPath || false;
+				//document.getElementById('debug-small-pois').checked = settings.smallPois || false;
+				//document.getElementById('debug-fix-holy-mountain-edge-noise').checked = settings.fixHolyMountainEdgeNoise || false;
+				//document.getElementById('exclude-edge-cases').checked = settings.excludeEdgeCases || false;
+				//document.getElementById('debug-extra-rerolls').value = settings.extraRerolls || 0;
+				//document.getElementById('debug-rng-info').checked = settings.rngInfo || false;
+				// Unlock settings
+				for (const unlock of Object.keys(UNLOCKABLES)) {
+					document.getElementById(`unlock-${unlock}`).checked = settings[`unlock_${unlock}`];
+				}
+				// Region settings
+				for (const region of Object.keys(GENERATOR_CONFIG)) {
+					document.getElementById(`region-${region}`).checked = settings[`region_${region}`];
+				}
+				this.unlocksChanged = true;
+				console.log("Settings loaded successfully.");
+			}
+			catch (e) {
+				console.warn('Failed to load settings:', e);
+			}
+		}
 	}
 };
 

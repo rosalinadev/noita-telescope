@@ -402,6 +402,8 @@ function recolorPixelSceneForBiome(sourceData, width, height, targetBiome, x, y)
 			outData[i] = bgColorR;
 			outData[i + 1] = bgColorG;
 			outData[i + 2] = bgColorB;
+			// Or just transparent? Having some issues with backgrounds making things invisible so I'll just do 50% for now
+			outData[i + 3] = 0x80;
 		} 
 		// Recolor Wang Colors
 		else if (recolorMaterials && (r > 0 || g > 0 || b > 0)) {

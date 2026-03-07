@@ -127,6 +127,7 @@ export function addStaticPixelScenes(ws, ng, pwIndex, pwIndexVertical, biomeData
 	const t0 = performance.now();
 
 	const pixelSceneOption = document.getElementById('enable-static-pixel-scenes').value;
+	// TODO: Currently this makes the static PoIs also get skipped, which I don't really want...
 	if (pixelSceneOption === 'off') return [];
 	let newPixelScenes = [];
 	let newPois = [];
