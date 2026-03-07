@@ -65,11 +65,11 @@ export function applyCoalmineHack(pixels, width, height, biomeName) {
 			const pIdx = ((y+4) * width + x) * 3;
 
 			// Logic:
-			// 1. 0x000040 -> Replace with Black (0,0,0) [Entrance/Air]
+			// 1. 0x000042 -> Replace with Black (0,0,0) [Entrance/Air]
 			// 2. 0xffffff -> Ignore (Keep Wang tile)
 			// 3. Everything else -> Replace with White (1,1,1) [Solid/Border]
 			
-			if (hex === 0x000040) {
+			if (hex === 0x000042) {
 				pixels[pIdx] = 0;
 				pixels[pIdx + 1] = 0;
 				pixels[pIdx + 2] = 0;
@@ -103,11 +103,11 @@ export function undoCoalmineHack(pixels, width, height, biomeName) {
 			const pIdx = ((y+4) * width + x) * 3;
 
 			// Logic:
-			// 1. 0x000040 -> Replace with Black (0,0,0) [Entrance/Air]
+			// 1. 0x000042 -> Replace with Black (0,0,0) [Entrance/Air]
 			// 2. 0xffffff -> Ignore (Keep Wang tile)
 			// 3. Everything else -> Replace with White (1,1,1) [Solid/Border]
 			
-			if (hex === 0x000040) {
+			if (hex === 0x000042) {
 				pixels[pIdx] = 0;
 				pixels[pIdx + 1] = 0;
 				pixels[pIdx + 2] = 0;

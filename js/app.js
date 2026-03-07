@@ -1021,13 +1021,23 @@ export const app = {
 	},
 
 	async getSurfaceOverlays() {
+		// These are low res so hopefully won't cause too much slowdown, if not we can look into streaming them in or something
 		// TODO: Add variants for PWs/NG+
 		// Going to use this mode when I don't need to modify the image data
-		this.surfaceOverlay = await loadPNGBitmap('./data/biome_maps/surface_overlay.png');
-		//this.surfaceOverlayPW = await loadPNGBitmap('./data/biome_maps/surface_overlay_pw.png');
-		//this.surfaceOverlayNGP = await loadPNGBitmap('./data/biome_maps/surface_overlay_ngp.png');
-		//this.surfaceOverlayNGPPW = await loadPNGBitmap('./data/biome_maps/surface_overlay_ngp_pw.png');
-        return this.surfaceOverlay;
+		this.surfaceOverlay = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay.png');
+		this.surfaceOverlayPW = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_pw.png');
+		//this.surfaceOverlayNGP = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_ngp.png');
+		//this.surfaceOverlayNGPPW = await loadPNGBitmap('./data/biome_maps/custom/surface_overlay_ngp_pw.png');
+		/*
+		this.surfaceOverlayScenes = {
+			"orb_room": await loadPNGBitmap('./data/biome_maps/custom/orb_room.png'),
+			"cursed_orb_room": await loadPNGBitmap('./data/biome_maps/custom/cursed_orb_room.png'),
+			"essence_eater_winter": await loadPNGBitmap('./data/biome_maps/custom/essence_eater_winter.png'),
+			"essence_eater_desert": await loadPNGBitmap('./data/biome_maps/custom/essence_eater_desert.png'),
+			"echoing_spire": await loadPNGBitmap('./data/biome_maps/custom/echoing_spire.png'),
+		};
+		*/
+		
 	},
 
 	draw() {
@@ -1079,6 +1089,18 @@ export const app = {
 						this.ctx.drawImage(this.surfaceOverlayPW, 0, 0, this.w * 512, this.h * 512);
 					}
 				}
+				// TODO: Render custom scene overlays
+				// Essence eaters (need to get positions)
+				/*
+				if (this.pw === 1 || this.pw === -1) {
+					if (this.surfaceOverlayScenes['essence_eater_winter']) {
+						this.ctx.drawImage(this.surfaceOverlayScenes['essence_eater_winter'], 0, 0, 512, 512);
+					}
+					if (this.surfaceOverlayScenes['essence_eater_desert']) {
+						this.ctx.drawImage(this.surfaceOverlayScenes['essence_eater_desert'], 0, 0, 512, 512);
+					}
+				}
+				*/
 			}
 			else {
 				if (this.pw === 0) {
@@ -1091,6 +1113,8 @@ export const app = {
 						this.ctx.drawImage(this.surfaceOverlayNGPPW, 0, 0, this.w * 512, this.h * 512);
 					}
 				}
+				// TODO: Render custom scene overlays
+				// Orb rooms
 			}
 		}
 
