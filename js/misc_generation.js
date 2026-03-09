@@ -239,7 +239,6 @@ export function getDragonDrops(worldSeed, ngPlusCount, biomeName, x, y, perks={}
         drops.push({type: 'item', item: 'spell', spell: opt, x: x - 8*count + (i-0.5)*16, y: y});
         opts.splice(rnd-1, 1);
     }
-    drops.push({type: 'enemy', enemy: 'dragon', x: x, y: y, ignore: true}); // Dummy item for searching
     return {type: 'dragon', items: drops, x: x, y: y, biome: biomeName};
 }
 

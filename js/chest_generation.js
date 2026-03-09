@@ -128,7 +128,6 @@ export function generateGreatChest(ws, ng, x, y, perks={}) {
 			count += 3;
 		}
 	}
-	items.push({type: 'item', item: 'great_chest', x: x, y: y}); // Dummy item to make searching easier
 
 	// Deduplicate items and add count property
 	let dedupedItems = [];

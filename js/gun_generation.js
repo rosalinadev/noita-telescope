@@ -406,26 +406,12 @@ function addRandomCards(worldSeed, ngPlusCount, gun, x, y, level, prng) {
     let card = "";
     let random_bullets = 0;
     let good_card_count = 0;
-
-    /*
-    if (card_count < 3) {
-        if (prng.Random(0, 100) < 20) {
-            card_count += 1;
-        }
-    }
-    */
-    if (prng.Random(0, 100) < 20) {
-        if (card_count < 3) {
-            card_count += 1;
-        }
-    }
-        
     
-    //if (prng.Random(0, 100) < 50 && card_count < 3) card_count += 1;
+    if (prng.Random(0, 100) < 50 && card_count < 3) card_count += 1;
     if (prng.Random(0, 100) < 10 || is_rare == 1) card_count += prng.Random(1,2);
 
     good_cards = prng.Random(5, 45);
-    card_count = prng.Random(roundHalfOfEven(0.51*deck_capacity), roundHalfOfEven(deck_capacity-0.00001));
+    card_count = prng.Random(roundHalfOfEven(0.51*deck_capacity), roundHalfOfEven(deck_capacity));
     card_count = clamp(card_count, 1, deck_capacity-1);
     gun['card_count'] = card_count;
 
