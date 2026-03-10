@@ -513,6 +513,7 @@ export function generateGunStandalone(rngState, type) {
     let force_unshuffle = typeData['force_unshuffle'];
     let gun = {};
     const prng = new NollaPrng(rngState);
+    prng.Prev(); // Undo the initial increment...
     
     gun['cards'] = [];
     gun['level'] = level;
@@ -690,7 +691,7 @@ for (let i = 0; i <= 1000; i++) {
     sprites[`wand_${i.toString().padStart(4, '0')}`] = 0;
 }
 // Math.pow(2, 31)
-for (let rngState = 0; rngState < Math.pow(2, 31); rngState++) {
+for (let rngState = 1; rngState < Math.pow(2, 31); rngState++) {
     if (rngState % 100000 == 0) {
         console.log("Current RNG state: ", rngState);
     }

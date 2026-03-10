@@ -107,7 +107,7 @@ export const app = {
 
 		this.initUnlocks();
 		this.initRegions();
-		this.preload();
+		this.preload().then(() => this.loadFromURLParams());
 
 		// Menu Toggles
 		document.querySelector('.adv-toggle').onclick = () => this.toggleAdvancedSearch();
@@ -1826,6 +1826,36 @@ export const app = {
 				console.warn('Failed to load settings:', e);
 			}
 		}
+	},
+
+	loadFromURLParams() {
+		const params = new URLSearchParams(window.location.search);
+		if (!params.has('seed')) return;
+
+		function parseParam(paramName, min, max) {
+			if (!params.has(paramName)) return;
+			const paramValue = params.get(paramName);
+			const parsed = Number.parseInt(paramValue, 10);
+			if (Number.isNaN(parsed)) {
+				console.warn(`Invalid ${paramName} in URL parameters:`, paramValue);
+				params.delete(paramName);
+				return;
+			}
+			return Math.max(min, Math.min(max, parsed));
+		};
+
+		const seedInt = parseParam('seed', 0, 2147483647);
+		const ngInt = parseParam('ng', 0, 28);
+
+		const newURL = new URL(window.location);
+		newURL.search = params.toString();
+		window.history.replaceState(null, '', newURL);
+
+		if (seedInt === undefined) return;
+		document.getElementById('seed').value = seedInt;
+		document.getElementById('ng').value = ngInt ?? 0;
+		this.saveSettings();
+		this.generate(true, true);
 	}
 };
 
