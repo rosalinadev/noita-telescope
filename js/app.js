@@ -126,6 +126,7 @@ export const app = {
 					document.getElementById('ng').value = 0;
 					const url = new URL(window.location.href);
 					url.searchParams.set('seed', this.seed);
+					url.searchParams.set('ng', 0);
 					window.history.replaceState({}, '', url.toString());
 					this.generate(true, true);
 				}
@@ -577,6 +578,7 @@ export const app = {
 
 	initRegions() {
 		const list = document.getElementById('regions-list');
+		// TODO: Sort this better
 		Object.keys(GENERATOR_CONFIG).forEach(key => {
 			const div = document.createElement('div');
 			div.className = 'region-item';

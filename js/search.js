@@ -97,6 +97,8 @@ export async function performSearch(allowIterative = true, autoNavigate = true) 
 	search.results = [];
 	search.index = -1;
 	
+	// TODO: See if it's a wand search to eliminate worlds that wouldn't be useful (e.g. no wands will ever be in heaven)
+	// Also for wand searches that include vertical PWs, should probably warn if any other biomes than power plant are enabled in NG...
 	
 	search.pwSequence = ['0,0'];
 	if (!searchVerticalPW) {

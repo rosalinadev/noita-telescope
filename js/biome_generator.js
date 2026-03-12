@@ -245,9 +245,10 @@ export function generateBiomeData(seed, ng, baseImageData, width, height) {
     addOrb(rng.Random(0, 5) + 10, rng.Random(0, 2) + 18, "Vault");
     addOrb(rng.Random(0, 5) + 49, rng.Random(0, 3) + 17, "Pyramid (Inside)");
 
+    let hx = rng.Random(0, 9) + 27;
     let hy = rng.Random(0, 2) + 44;
     if (ng === 3 || ng >= 25) hy = 47;
-    addOrb(rng.Random(0, 9) + 27, hy, "Hell");
+    addOrb(hx, hy, "Hell");
 
     addOrb(rng.Random(0, 6) + 12, rng.Random(0, 3) + 40, "Snowcave");
     addOrb(rng.Random(0, 4) + 51, rng.Random(0, 5) + 41, "Desert");
@@ -255,6 +256,16 @@ export function generateBiomeData(seed, ng, baseImageData, width, height) {
     addOrb(rng.Random(0, 9) + 40, rng.Random(0, 11) + 21, "Orb 1");
     addOrb(rng.Random(0, 7) + 17, rng.Random(0, 8) + 21, "Orb 2");
     addOrb(rng.Random(0, 7) + 1, rng.Random(0, 9) + 24, "Orb 3");
+
+    // Prevent these from getting overwritten by caves
+    const color_end_room = 0xFF50EED7
+    const color_boss_arena = 0xFF14EED7
+
+    painter.set(44, 43, color_end_room);
+
+    painter.rect( 35, 38, 5, 2, color_boss_arena, 0);
+    painter.set(37, 40, color_boss_arena)
+    painter.set(38, 40, color_boss_arena)
 
     // Generate heaven/hell maps (literally just repeat first/last row)
     let heavenPixels = new Uint32Array(pixels.length);
