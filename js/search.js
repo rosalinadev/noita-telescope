@@ -7,8 +7,13 @@ import { CONTAINER_TYPES } from './utils.js';
 import { generateGreatChest } from './chest_generation.js';
 import { generateWand } from './wand_generation.js';
 import { SPRITE_RARITY } from './wand_config.js';
+import { NollaPrng } from './nolla_prng.js';
 
 const SEARCH_ENABLED = true; // Debug
+
+// Load quick search things
+const ORB_SEEDS = await fetch('./data/rng/orb_seeds.json').then(async res => new Set(await res.json()));
+const SAMPO_SEEDS = await fetch('./data/rng/sampo_seeds.json').then(async res => new Set(await res.json()));
 
 let searchActive = false;
 let search = {
@@ -284,7 +289,7 @@ export async function performLocalSearch(mode, radius, startX, startY) {
 	// Sort by Manhattan distance
 	// If distances are equal, sort by X then Y to keep it deterministic
 	coords.sort((a, b) => a.dist - b.dist || a.x - b.x || a.y - b.y);
-	search.localSequence = coords.map(c => `${c.x},${c.y}`);
+	search.localSequence = coords; //coords.map(c => `${c.x},${c.y}`);
 
 	search.lastLocalIdx = -1;
 	cancelBtn.style.display = 'block';
@@ -550,6 +555,16 @@ async function findNextLocalMatch(mode) {
 	const cancelBtn = document.getElementById('cancel-search');
 	let found = false;
 
+	// Quick search modes to just find the seed and not do the full computation for no reason
+	let quickSearch = null;
+	if (mode === 'eoe' && filters.queryList.length === 1 && isMatch('true_orb', filters.queryList[0])) quickSearch = 'true_orb';
+	if (mode === 'eoe' && filters.queryList.length === 1 && isMatch('sampo', filters.queryList[0])) quickSearch = 'sampo';
+	const prng = new NollaPrng(0); // To avoid reinstantiating it over and over
+
+	app.setLoading(true, "Searching local area...");
+	// Yield to browser so the UI/Text updates can render
+	await new Promise(r => setTimeout(r, 0));
+
 	for (let i = search.lastLocalIdx + 1; i < search.localSequence.length; i++) {
 		if (!searchActive) {
 			//cancelBtn.style.display = 'none';
@@ -557,12 +572,12 @@ async function findNextLocalMatch(mode) {
 			return false;
 		}
 		
-		const [currX, currY] = search.localSequence[i].split(',').map(Number);
+		//const [currX, currY] = search.localSequence[i].split(',').map(Number);
+		const { x: currX, y: currY } = search.localSequence[i];
 		search.lastLocalIdx = i;
 
-		const percentage = ((i + 1) / search.localSequence.length * 100).toFixed(1);
-
-		app.setLoading(true, `Searching... (${percentage}%)`);
+		//const percentage = ((i + 1) / search.localSequence.length * 100).toFixed(1);
+		//app.setLoading(true, `Searching... (${percentage}%)`);
 
 		let item;
 
@@ -581,7 +596,23 @@ async function findNextLocalMatch(mode) {
 			};
 		}
 		else if (mode === "eoe") {
-			item = generateGreatChest(seed, ngPlusCount, currX, currY, app.perks);
+			if (quickSearch === 'true_orb') {
+				prng.SetRandomSeed(app.seed + app.ngPlusCount, currX, currY);
+				if (ORB_SEEDS.has(prng.Seed)) {
+					found = true;
+					item = {type: 'item', item: 'true_orb', x: currX, y: currY};
+				}
+			}
+			else if (quickSearch === 'sampo') {
+				prng.SetRandomSeed(app.seed + app.ngPlusCount, currX, currY);
+				if (SAMPO_SEEDS.has(prng.Seed)) {
+					found = true;
+					item = {type: 'item', item: 'sampo', x: currX, y: currY};
+				}
+			}
+			else {
+				item = generateGreatChest(seed, ngPlusCount, currX, currY, app.perks);
+			}
 		}
 
 		if (item && checkMatch(item, filters)) {
@@ -606,8 +637,9 @@ async function findNextLocalMatch(mode) {
 			return true;
 		}
 		
+		// Turns out this is why local search was slow, woops.
 		// Yield to browser so the UI/Text updates can render
-		await new Promise(r => setTimeout(r, 0));
+		//await new Promise(r => setTimeout(r, 0));
 	}
 
 	app.setLoading(false);
